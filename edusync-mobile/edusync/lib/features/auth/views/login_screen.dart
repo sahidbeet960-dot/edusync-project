@@ -118,9 +118,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ═══════════════════════════════════════════════════════
   // ─── LOGIN VIEW ───
-  // ═══════════════════════════════════════════════════════
 
   Widget _buildLoginView({Key? key}) {
     return Column(
@@ -252,9 +250,8 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ═══════════════════════════════════════════════════════
+
   // ─── REGISTER VIEW ───
-  // ═══════════════════════════════════════════════════════
 
   Widget _buildRegisterView({Key? key}) {
     return Column(
@@ -427,9 +424,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ═══════════════════════════════════════════════════════
   // ─── SHARED WIDGETS ───
-  // ═══════════════════════════════════════════════════════
 
   Widget _buildInputField({
     required TextEditingController controller,
@@ -563,9 +558,8 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ═══════════════════════════════════════════════════════
   // ─── SUBMIT LOGIC ───
-  // ═══════════════════════════════════════════════════════
+
 
   void _submitLogin(AuthViewModel auth) {
     if (!_loginFormKey.currentState!.validate()) return;
