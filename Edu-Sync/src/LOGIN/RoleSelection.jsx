@@ -26,8 +26,8 @@ const RoleSelection = () => {
       id: 'STUDENT',
       title: 'Student Login',
       description: 'For Students to Access Portal & Live Study Rooms',
-      icon: <GraduationCap className="w-12 h-12 mb-4 text-indigo-500" />,
-      theme: 'hover:border-indigo-500 hover:shadow-indigo-300',
+      icon: <GraduationCap className="w-12 h-12 mb-4 text-violet-500" />,
+      theme: 'hover:border-violet-500 hover:shadow-violet-300',
     }
   ];
 

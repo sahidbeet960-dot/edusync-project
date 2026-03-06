@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 // authentication and log in 
 import RoleSelection from './LOGIN/RoleSelection';
+import Login from './AUTH/Login';
 function App() {
   
   return (
@@ -9,8 +10,9 @@ function App() {
               <Routes>
                 {/* Default router */}
                 <Route path="/" element={<Navigate to="/role-selection" />} />
-                {/* --- Auth Routes --- */}
+                {/*  Authentication Routes */}
                 <Route path="/role-selection" element={<RoleSelection />} />
+                <Route path="/login" element={<Login />} />
               </Routes>
          </div>
     </Router>
