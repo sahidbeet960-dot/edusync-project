@@ -10,6 +10,7 @@ from alembic import context
 from app.core.config import settings
 from app.models.base import Base                     # type: ignore
 from app.models.users import User  # type: ignore 
+from app.models.materials import Material  
 
 # IMPORTANT: Whenever you create a new model, you MUST import it here later
 # e.g., from app.models.user import User
