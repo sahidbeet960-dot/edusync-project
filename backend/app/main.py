@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1 import auth, users, materials
+from app.api.v1 import auth, users, materials, forum
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -22,6 +22,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/v1/users")
 app.include_router(materials.router, prefix="/api/v1/materials", tags=["Material Hub"])
+app.include_router(forum.router, prefix="/api/v1/forum", tags=["Doubt Forum"])
 
 @app.get("/")
 async def root():
