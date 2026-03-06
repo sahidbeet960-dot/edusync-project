@@ -1,0 +1,20 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// authentication and log in 
+import RoleSelection from './LOGIN/RoleSelection';
+function App() {
+  
+  return (
+    <Router>
+         <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+              <Routes>
+                {/* Default router */}
+                <Route path="/" element={<Navigate to="/role-selection" />} />
+                {/* --- Auth Routes --- */}
+                <Route path="/role-selection" element={<RoleSelection />} />
+              </Routes>
+         </div>
+    </Router>
+  )
+}
+
+export default App;
