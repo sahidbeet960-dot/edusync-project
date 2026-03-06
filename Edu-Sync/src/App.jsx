@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 // authentication and log in 
 import RoleSelection from './LOGIN/RoleSelection';
 import Login from './AUTH/Login';
+import Registration from './AUTH/Registration';
 function App() {
   
   return (
@@ -13,6 +14,7 @@ function App() {
                 {/*  Authentication Routes */}
                 <Route path="/role-selection" element={<RoleSelection />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Registration />} />
               </Routes>
          </div>
     </Router>
