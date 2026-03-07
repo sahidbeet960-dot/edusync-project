@@ -2,71 +2,72 @@ import React, { useState } from 'react';
 import { ChevronRight, Upload, X, Loader2, Megaphone, BookOpen } from 'lucide-react';
 import apiClient from '../services/api';
 
-const ResourceManagement = ()=> {
-      const [isModalOpen, setIsModalOpen] = useState(false);
-      const [uploadType, setUploadType] = useState(''); // 'Notice' or 'Syllabus'.
-      const [isUploading, setIsUploading] = useState(false); 
+const ResourceManagement = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [uploadType, setUploadType] = useState(''); // 'Notice' or 'Syllabus'
+  const [isUploading, setIsUploading] = useState(false);
 
-      const [uploadForm, setUploadForm] = useState({
-          title: '',
-          description: '',
-          semester: '',
-          file: null
+  // Form State
+  const [uploadForm, setUploadForm] = useState({
+    title: '',
+    description: '',
+    semester: '',
+    file: null
+  });
+
+  const openModal = (type) => {
+    setUploadType(type);
+    setIsModalOpen(true);
+  };
+
+  const handleFileChange = (e) => {
+    setUploadForm({ ...uploadForm, file: e.target.files[0] });
+  };
+
+ const handleUploadSubmit = async (e) => {
+    e.preventDefault();
+    if (!uploadForm.file) {
+      alert("Please select a file to upload.");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('title', uploadForm.title);
+      formData.append('description', uploadForm.description || '');
+      formData.append('semester', uploadForm.semester);
+      formData.append('tags', uploadType); 
+      formData.append('file', uploadForm.file); 
+
+      const uploadResponse = await apiClient.post('/api/v1/materials/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
-      const openModal = (type) => {
-          setUploadType(type);
-          setIsModalOpen(true);
-      };
-
-      const handleFileChange = (e) => {
-           setUploadForm({ ...uploadForm, file: e.target.files[0] });
-      };
-
-      const handleUploadSubmit = async (e) => {
-           e.preventDefault();
-           if (!uploadForm.file) {
-               alert("Please select a file to upload.");
-               return;
-           }
-
-           setIsUploading(true);
-
-           try {
-                const formData = new FormData();
-                formData.append('title', uploadForm.title);
-                formData.append('description', uploadForm.description || '');
-                formData.append('semester', uploadForm.semester);
-                formData.append('tags', uploadType); 
-                formData.append('file', uploadForm.file); 
-
-                const uploadResponse = await apiClient.post('/api/v1/materials/', formData, {
-                      headers: {
-                             'Content-Type': 'multipart/form-data'
-                      }
-                });
-
-                 const materialId = uploadResponse.data?.material?.id; 
+      const materialId = uploadResponse.data?.material?.id; 
       
-               if (materialId) {
-                         await apiClient.patch(`/api/v1/materials/${materialId}/verify`);
-                         alert(`${uploadType} published and verified successfully! It is now visible to students.`);
-               } else {
-                       console.warn("Could not find ID in response:", uploadResponse.data);
-                       alert(`${uploadType} published, but we couldn't auto-verify it.`);
-               }
+      if (materialId) {
+         await apiClient.patch(`/api/v1/materials/${materialId}/verify`);
+         alert(`${uploadType} published and verified successfully! It is now visible to students.`);
+      } else {
+         console.warn("Could not find ID in response:", uploadResponse.data);
+         alert(`${uploadType} published, but we couldn't auto-verify it.`);
+      }
       
-                setIsModalOpen(false);
-                setUploadForm({ title: '', description: '', semester: '', file: null });
+      setIsModalOpen(false);
+      setUploadForm({ title: '', description: '', semester: '', file: null });
 
-            } catch (error) {
-                  console.error(`Error uploading ${uploadType}:`, error);
-                  alert(error.response?.data?.detail || `Failed to post ${uploadType}. Please try again.`);
-            } finally {
-               setIsUploading(false);
-            }
-    };
-      
+    } catch (error) {
+      console.error(`Error uploading ${uploadType}:`, error);
+      alert(error.response?.data?.detail || `Failed to post ${uploadType}. Please try again.`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
       <h3 className="text-lg font-bold text-slate-800 mb-4">Quick Actions</h3>
@@ -173,4 +174,5 @@ const ResourceManagement = ()=> {
     </div>
   );
 };
+
 export default ResourceManagement;

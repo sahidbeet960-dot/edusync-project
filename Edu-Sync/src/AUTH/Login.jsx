@@ -2,20 +2,22 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Lock, Mail, Loader2 } from 'lucide-react';
 import apiClient from '../services/api'; 
-import { jwtDecode } from 'jwt-decode'; 
+import { jwtDecode } from 'jwt-decode'; // IMPORT THIS!
 
-const Login = () =>{
-      const navigate=useNavigate()
-      const location=useLocation()
+const Login = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // The role the user claims to be (based on the portal they clicked)
+  const attemptedRole = location.state?.role || 'STUDENT';
 
-      const attemptedRole=location.state?.role || 'STUDENT'
+  // Form State
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-      const [email,setEmail]=useState('')
-      const [password,setPassword]=useState('')
-      const [isLoading, setIsLoading] = useState(false);
-      const [error, setError] = useState('');
-
-      const registerPath = '/register';
+  const registerPath = '/register';
 
   const roleConfig = {
     PROFESSOR: {
@@ -27,22 +29,20 @@ const Login = () =>{
     CR: {
       title: 'Class Representative Access',
       subtitle: 'Enter your CR credentials to manage schedules',
-      color: 'bg-green-600 hover:bg-green-700',
+      color: 'bg-teal-600 hover:bg-teal-700',
       placeholder: 'cr.name@edu-sync.edu',
     },
     STUDENT: {
       title: 'Student Portal',
       subtitle: 'Access your syllabus and live rooms',
-      color: 'bg-violet-600 hover:bg-violet-700',
+      color: 'bg-indigo-600 hover:bg-indigo-700',
       placeholder: 'student.roll@edu-sync.edu',
     }
   };
 
-    const currentConfig = roleConfig[attemptedRole];
-   
-    // this function handel the log in process
+  const currentConfig = roleConfig[attemptedRole];
 
-    const handleLogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
@@ -57,17 +57,24 @@ const Login = () =>{
           'Content-Type': 'application/x-www-form-urlencoded'
         }
       });
+      
       const { access_token } = response.data;
+      
+      // --- NEW LOGIC: VERIFY ACTUAL ROLE ---
+      // 1. Decode the token to see the backend's truth
       const decodedToken = jwtDecode(access_token);
-
+      
+      // 2. Extract the true role (Check your backend token payload! It might be 'role', 'user_role', etc.)
       const actualRole = decodedToken.role?.toUpperCase(); 
 
+      // 3. Compare the truth with what they attempted
       if (actualRole !== attemptedRole) {
         setError(`Access Denied: This email is registered as a ${actualRole}. Please use the correct login portal.`);
         setIsLoading(false);
-        return;
+        return; // Stop the login process!
       }
 
+      // If they pass the check, save the token and let them in
       localStorage.setItem('edusync_token', access_token);
       
       if (actualRole === 'PROFESSOR') navigate('/dashboard/professor');
@@ -85,7 +92,7 @@ const Login = () =>{
       setIsLoading(false);
     }
   };
-   
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-slate-100">
       
@@ -97,7 +104,7 @@ const Login = () =>{
         Back to Roles
       </button>
 
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-x1 overflow-hidden border border-slate-200">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
         
         <div className={`p-8 text-center text-white ${currentConfig.color.split(' ')[0]}`}>
           <h2 className="text-2xl font-bold tracking-wide">{currentConfig.title}</h2>
@@ -121,7 +128,8 @@ const Login = () =>{
                 </div>
                 <input
                   type="email"
-                  required value={email}
+                  required
+                  value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-700"
                   placeholder={currentConfig.placeholder}
@@ -137,7 +145,8 @@ const Login = () =>{
                 </div>
                 <input
                   type="password"
-                  required value={password}
+                  required
+                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-700"
                   placeholder="••••••••"
@@ -168,7 +177,6 @@ const Login = () =>{
       </div>
     </div>
   );
-      
 };
 
 export default Login;

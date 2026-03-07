@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from "react";
-import {
-  ShieldAlert,
-  CheckCircle,
-  Trash2,
-  ExternalLink,
-  Loader2,
-  FileText,
-} from "lucide-react";
-import apiClient from "../services/api";
+import React, { useState, useEffect } from 'react';
+import { ShieldAlert, CheckCircle, Trash2, ExternalLink, Loader2, FileText } from 'lucide-react';
+import apiClient from '../services/api';
 
-const pendingApprovals = () => {
+const PendingApprovals = () => {
   const [pendingMaterials, setPendingMaterials] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -17,14 +10,11 @@ const pendingApprovals = () => {
     fetchPendingMaterials();
   }, []);
 
-  // fetching all the pending materials
-
   const fetchPendingMaterials = async () => {
     try {
-      const response = await apiClient.get("/api/v1/materials/");
-      const unverified = response.data.filter(
-        (file) => file.is_verified === false,
-      );
+      const response = await apiClient.get('/api/v1/materials/');
+      // Filter out only the unverified files
+      const unverified = response.data.filter(file => file.is_verified === false);
       setPendingMaterials(unverified);
     } catch (error) {
       console.error("Error fetching pending materials:", error);
@@ -33,47 +23,37 @@ const pendingApprovals = () => {
     }
   };
 
-  // approve the pending materials
-
   const handleApprove = async (id) => {
     try {
       await apiClient.patch(`/api/v1/materials/${id}/verify`);
-      setPendingMaterials((prev) => prev.filter((file) => file.id !== id));
+      // Remove from pending list
+      setPendingMaterials(prev => prev.filter(file => file.id !== id));
       alert("Material Approved! It is now visible in the Subject Folders.");
     } catch (error) {
       alert("Failed to approve material.");
     }
   };
 
-  // delete the unverified material
-
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this unverified material?",
-    );
+    const confirmDelete = window.confirm("Are you sure you want to permanently delete this unverified material?");
     if (!confirmDelete) return;
 
     try {
+      // Connects to the new delete endpoint you are creating
       await apiClient.delete(`/api/v1/materials/${id}`);
-      setPendingMaterials((prev) => prev.filter((file) => file.id !== id));
+      setPendingMaterials(prev => prev.filter(file => file.id !== id));
     } catch (error) {
       alert("Failed to delete material.");
     }
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6 bg-white rounded-2xl shadow-sm border border-slate-200 text-center text-slate-500">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-      </div>
-    );
+    return <div className="p-6 bg-white rounded-2xl shadow-sm border border-slate-200 text-center text-slate-500"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>;
   }
 
   if (pendingMaterials.length === 0) {
-    return null;
+    return null; // Hide the widget if there is nothing to approve!
   }
-
-  // User interface for verification process
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-amber-200 overflow-hidden mb-8">
@@ -89,32 +69,19 @@ const pendingApprovals = () => {
 
       <div className="divide-y divide-slate-100">
         {pendingMaterials.map((file) => (
-          <div
-            key={file.id}
-            className="p-5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-50 transition-colors"
-          >
+          <div key={file.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-50 transition-colors">
+            
             <div className="flex items-start flex-1 mb-4 sm:mb-0">
               <div className="p-2 bg-slate-100 rounded-lg text-slate-500 mr-4 shrink-0 mt-1">
                 <FileText className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-slate-800 text-sm">
-                  {file.title}
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5 max-w-md line-clamp-1">
-                  {file.description}
-                </p>
+                <h4 className="font-bold text-slate-800 text-sm">{file.title}</h4>
+                <p className="text-xs text-slate-500 mt-0.5 max-w-md line-clamp-1">{file.description}</p>
                 <div className="flex items-center text-[10px] text-slate-400 mt-2 space-x-3">
-                  <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-medium">
-                    Folder: {file.tags || "General"}
-                  </span>
+                  <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-medium">Folder: {file.tags || 'General'}</span>
                   <span>Sem {file.semester}</span>
-                  <a
-                    href={file.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline flex items-center"
-                  >
+                  <a href={file.file_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center">
                     Review File <ExternalLink className="w-3 h-3 ml-1" />
                   </a>
                 </div>
@@ -122,23 +89,29 @@ const pendingApprovals = () => {
             </div>
 
             <div className="flex items-center space-x-2 shrink-0 sm:ml-4">
-              <button
+              <button 
                 onClick={() => handleDelete(file.id)}
                 className="px-3 py-1.5 border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg text-xs font-bold flex items-center transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Reject
               </button>
-              <button
+              <button 
                 onClick={() => handleApprove(file.id)}
                 className="px-4 py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-lg text-xs font-bold flex items-center transition-colors shadow-sm"
               >
                 <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Approve
               </button>
             </div>
+            
           </div>
         ))}
       </div>
     </div>
   );
 };
-export default pendingApprovals;
+
+export default PendingApprovals;
+
+
+
+

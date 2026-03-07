@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, ArrowLeft, Loader2 } from 'lucide-react';
-import apiClient from '../Services/Api';
+import apiClient from '../services/api'; // Make sure you have this api configuration file!
 
-const Registration = () =>{
-       const location=useLocation();
-       const navigate=useNavigate();
+const Register = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Retrieve the role from state, default to STUDENT
+  const role = location.state?.role || 'STUDENT';
 
-       const role = location.state?.role || 'STUDENT';
-
-const roleConfig = {
+  // Dynamic styling and text based on the selected role
+  const roleConfig = {
     PROFESSOR: {
       title: 'Faculty Registration',
       subtitle: 'Create your Professor account for EduSync',
@@ -20,57 +22,61 @@ const roleConfig = {
     CR: {
       title: 'Class Representative Registration',
       subtitle: 'Create your CR account for EduSync',
-      color: 'bg-green-600',
-      btnColor: 'bg-green-600 hover:bg-green-700',
-      ring: 'focus:ring-green-500',
+      color: 'bg-teal-600',
+      btnColor: 'bg-teal-600 hover:bg-teal-700',
+      ring: 'focus:ring-teal-500',
     },
     STUDENT: {
       title: 'Student Registration',
       subtitle: 'Create your student account for EduSync',
-      color: 'bg-violet-600',
-      btnColor: 'bg-violet-600 hover:bg-violet-700',
-      ring: 'focus:ring-violet-500',
+      color: 'bg-indigo-600',
+      btnColor: 'bg-indigo-600 hover:bg-indigo-700',
+      ring: 'focus:ring-indigo-500',
     }
   };
 
-   const currentConfig = roleConfig[role];
+  const currentConfig = roleConfig[role];
 
-   const [formData,setformData]=useState({
-       full_name: '',
-       email:'',
-       password:'',
-       role:role,
-   });
-   const [error, setError] = useState('');
-   const [isLoading, setIsLoading] = useState(false);
+  // Backend state mapping exactly to your Swagger JSON schema
+  const [formData, setFormData] = useState({ 
+    full_name: '', 
+    email: '', 
+    password: '', 
+    role: role // automatically assigned based on routing state
+  });
+  
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-   // registration handle
-   const  handleRegister =async(e)=>{
-         e.preventDefault();
-         setError('');
-         setIsLoading(true);
-         // trying to get data from the backend
-         try{
-            const response = await apiClient.post('/api/v1/auth/register', formData);
-            console.log("Registration Success:", response.data);
-            alert(`${currentConfig.title} Your registration successfully done! Please login.`);
-            navigate('/login', { state: { role } });
-         }catch(err){
-            console.err('Registration error:',err);
-            if (err.response?.data?.detail) {
-                 setError(typeof err.response.data.detail === 'string' ?
-                 err.response.data.detail : 'Validation Error: Check your inputs.');
-            } else {
-                    setError('Failed to register. Please try again.');
-              }
-         }finally{
-             setIsLoading(false);
-         }
-   };
-     
-   
-    return (
-     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-slate-100">
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      // Connect to your backend
+      const response = await apiClient.post('/api/v1/auth/register', formData);
+      
+      console.log("Registration Success:", response.data);
+      alert(`${currentConfig.title} successful! Please login.`);
+      
+      // Navigate back to login with the correct role selected
+      navigate('/login', { state: { role } });
+
+    } catch (err) {
+      console.error('Registration Error:', err);
+      if (err.response?.data?.detail) {
+        setError(typeof err.response.data.detail === 'string' ? err.response.data.detail : 'Validation Error: Check your inputs.');
+      } else {
+        setError('Failed to register. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-slate-100">
       
       <button 
         onClick={() => navigate('/login', { state: { role } })} 
@@ -81,7 +87,7 @@ const roleConfig = {
 
       <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
         
-        
+        {/* Dynamic Header */}
         <div className={`p-6 text-white text-center ${currentConfig.color}`}>
           <h2 className="text-2xl font-bold tracking-wide">{currentConfig.title}</h2>
           <p className="text-sm opacity-90 mt-1">{currentConfig.subtitle}</p>
@@ -89,7 +95,7 @@ const roleConfig = {
 
         <form onSubmit={handleRegister} className="p-8 space-y-5">
           
-          
+          {/* Error Message Display */}
           {error && (
             <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 text-center">
               {error}
@@ -102,10 +108,11 @@ const roleConfig = {
               <User className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
               <input 
                 type="text" 
-                required value={formData.full_name}
-                onChange={(e) => setformData({...formData, full_name: e.target.value})}
+                required 
+                value={formData.full_name}
+                onChange={(e) => setFormData({...formData, full_name: e.target.value})}
                 className={`w-full pl-10 pr-4 py-2 border rounded-lg outline-none focus:ring-2 ${currentConfig.ring}`} 
-                placeholder="Toufik Mamud" 
+                placeholder="John Doe" 
               />
             </div>
           </div>
@@ -116,8 +123,9 @@ const roleConfig = {
               <Mail className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
               <input 
                 type="email" 
-                required value={formData.email}
-                onChange={(e) => setformData({...formData, email: e.target.value})}
+                required 
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className={`w-full pl-10 pr-4 py-2 border rounded-lg outline-none focus:ring-2 ${currentConfig.ring}`}
                 placeholder="name@edu-sync.edu" 
               />
@@ -130,8 +138,9 @@ const roleConfig = {
               <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
               <input 
                 type="password" 
-                required value={formData.password}
-                onChange={(e) => setformData({...formData, password: e.target.value})}
+                required 
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
                 className={`w-full pl-10 pr-4 py-2 border rounded-lg outline-none focus:ring-2 ${currentConfig.ring}`}
                 placeholder="••••••••" 
               />
@@ -155,7 +164,7 @@ const roleConfig = {
         </form>
       </div>
     </div>
-   );
+  );
 };
 
-export default Registration;
+export default Register;
