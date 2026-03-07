@@ -5,6 +5,9 @@ from sqlalchemy import func
 
 from app.core.database import get_db
 from app.models.users import User
+from app.models.materials import Material
+from app.models.forum import Question, Answer, AnswerVote
+from app.models.study import StudySession
 
 from app.api.dependencies import get_current_user
 from app.schemas.user import UserProfileResponse, UserProfileUpdate, UserResponse
@@ -82,3 +85,47 @@ async def update_my_profile(
         )
 
     return current_user
+
+
+@router.get("/me/profile", response_model=UserProfileResponse)
+async def get_user_profile(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # 1. Count Total Materials Uploaded
+    mat_query = select(func.count(Material.id)).where(Material.uploader_id == current_user.id)
+    mat_result = await db.execute(mat_query)
+    total_materials = mat_result.scalar() or 0
+
+    # 2. Count Total Questions Asked
+    q_query = select(func.count(Question.id)).where(Question.author_id == current_user.id)
+    q_result = await db.execute(q_query)
+    total_questions = q_result.scalar() or 0
+
+    # 3. Count Total Answers Verified by a Professor
+    a_query = select(func.count(Answer.id)).where(
+        Answer.author_id == current_user.id, 
+        Answer.is_professor_verified == True
+    )
+    a_result = await db.execute(a_query)
+    total_answers = a_result.scalar() or 0
+
+    # 4. Calculate Total Study Minutes
+    study_query = select(func.sum(StudySession.duration_seconds)).where(StudySession.user_id == current_user.id)
+    study_result = await db.execute(study_query)
+    total_seconds = study_result.scalar() or 0
+    total_minutes = total_seconds // 60
+
+    # Package it all together for the frontend
+    return {
+        "id": current_user.id,
+        "full_name": current_user.full_name,
+        "role": current_user.role,
+        "department": current_user.department,
+        "semester": current_user.semester,
+        "bio": current_user.bio,
+        "total_materials_uploaded": total_materials,
+        "total_questions_asked": total_questions,
+        "total_verified_answers": total_answers,
+        "total_study_minutes": total_minutes
+    }

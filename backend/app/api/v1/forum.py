@@ -19,9 +19,9 @@ router = APIRouter()
 
 @router.post("/questions", response_model=QuestionResponse, status_code=status.HTTP_201_CREATED)
 async def create_question(
-    title: str = Form(...),            # <--- CHANGED THIS
-    content: str = Form(...),          # <--- CHANGED THIS
-    file: Optional[UploadFile] = File(None), # Optional file upload
+    title: str = Form(...),            
+    content: str = Form(...),
+    file: Optional[UploadFile] = File(None), # Optional file upload (one per question - multiple uploads not allowed)
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -197,7 +197,7 @@ async def unverify_answer(
     current_user: User = Depends(get_current_user)
 ):
     # Strictly lock this to Professors and Admins
-    if current_user.role not in [RoleEnum.PROFESSOR, RoleEnum.ADMIN]:
+    if current_user.role not in [RoleEnum.PROFESSOR, RoleEnum.ADMIN]:    # will remove the admins
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only professors can unmark answers."

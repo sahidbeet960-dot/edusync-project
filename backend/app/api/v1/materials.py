@@ -19,7 +19,7 @@ async def upload_material(
     description: str = Form(None),
     semester: int = Form(...),
     tags: str = Form(None),
-    file: UploadFile = File(...), # <--- This catches the actual PDF!
+    file: UploadFile = File(...),             # <--- This catches the actual PDF!
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -61,6 +61,7 @@ async def get_materials(
     materials = result.scalars().all()
     
     return materials
+
 
 
 #--------------------------------------------------------- Verify / Unverify -----------------------------------------------------#

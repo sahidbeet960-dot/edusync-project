@@ -2,11 +2,10 @@ from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from jose import jwt
 
-# Hackathon Speed: Hardcoding the secret key here for now. 
 # (In a real production app, this goes in the .env file)
 SECRET_KEY = "hkjuoUujwjhqwioqiwwqoid5ohhlVK876"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # Keep them logged in for 1 week
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # Keep logged in for 1 week
 
 # Context for bcrypt password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
