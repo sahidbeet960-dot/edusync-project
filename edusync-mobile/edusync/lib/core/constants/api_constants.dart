@@ -3,7 +3,7 @@ class ApiConstants {
 
   // Production backend
   static const String baseUrl =
-      'API_URL';
+      'https://edusync-project-production.up.railway.app';
   
   static const String wsBaseUrl = 'WebSocket_URL';
   static const String apiPrefix = '/api/v1';

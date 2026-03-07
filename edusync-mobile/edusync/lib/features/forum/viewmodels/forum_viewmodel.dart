@@ -70,11 +70,15 @@ class ForumViewModel extends ChangeNotifier {
   Future<bool> createQuestion({
     required String title,
     required String content,
+    List<int>? fileBytes,
+    String? fileName,
   }) async {
     try {
       final question = await _repo.createQuestion(
         title: title,
         content: content,
+        fileBytes: fileBytes,
+        fileName: fileName,
       );
       _questions.insert(0, question);
       notifyListeners();

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../../core/network/api_client.dart';
 import '../../core/constants/api_constants.dart';
 import '../models/question_model.dart';
@@ -23,15 +24,38 @@ class ForumRepository {
   Future<QuestionModel> createQuestion({
     required String title,
     required String content,
+    List<int>? fileBytes,
+    String? fileName,
   }) async {
-    final response = await _api.post(
-      ApiConstants.forumQuestions,
-      data: {
+    dynamic requestData;
+
+    if (fileBytes != null && fileName != null) {
+      requestData = FormData.fromMap({
         'title': title,
         'content': content,
-      },
-    );
-    return QuestionModel.fromJson(response.data);
+        'file': MultipartFile.fromBytes(
+          fileBytes,
+          filename: fileName,
+        ),
+      });
+
+      final response = await _api.uploadFile(
+        ApiConstants.forumQuestions,
+        requestData,
+      );
+      return QuestionModel.fromJson(response.data);
+    } else {
+      requestData = FormData.fromMap({
+        'title': title,
+        'content': content,
+      });
+
+      final response = await _api.uploadFile(
+        ApiConstants.forumQuestions,
+        requestData,
+      );
+      return QuestionModel.fromJson(response.data);
+    }
   }
 
   /// POST /api/v1/forum/questions/{id}/answers — answer a question

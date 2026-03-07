@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/viewmodels/auth_viewmodel.dart';
 import '../../features/auth/views/login_screen.dart';
+import '../../features/home/views/home_screen.dart';
 
 
 class AppRouter {
@@ -33,6 +34,10 @@ class AppRouter {
         GoRoute(
           path: '/login',
           builder: (context, state) => const LoginScreen(),
+        ),
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const HomeScreen(),
         ),
       ],
     );

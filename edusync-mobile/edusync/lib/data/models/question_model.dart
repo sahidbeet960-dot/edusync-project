@@ -4,6 +4,7 @@ class QuestionModel {
   final String content;
   final String authorId;
   final String? authorName;
+  final String? fileUrl; // Added fileUrl
   final DateTime createdAt;
   final int answerCount;
   final List<AnswerModel> answers;
@@ -14,6 +15,7 @@ class QuestionModel {
     required this.content,
     required this.authorId,
     this.authorName,
+    this.fileUrl,
     required this.createdAt,
     this.answerCount = 0,
     this.answers = const [],
@@ -33,6 +35,7 @@ class QuestionModel {
       content: json['content'] ?? '',
       authorId: json['author_id']?.toString() ?? '',
       authorName: json['author_name'],
+      fileUrl: json['file_url'], // Map file_url
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
@@ -45,6 +48,32 @@ class QuestionModel {
         'title': title,
         'content': content,
       };
+
+  /// Safely extracts the file extension from the [fileUrl]
+  String get fileExtension {
+    if (fileUrl == null || fileUrl!.isEmpty) return '';
+    try {
+      final uri = Uri.parse(fileUrl!);
+      if (uri.pathSegments.isNotEmpty) {
+        final lastSegment = uri.pathSegments.last;
+        if (lastSegment.contains('.')) {
+          final ext = lastSegment.split('.').last.toUpperCase();
+          if (ext.length <= 4 && RegExp(r'^[A-Z0-9]+$').hasMatch(ext)) {
+            return ext;
+          }
+        }
+      }
+      return 'FILE';
+    } catch (_) {
+      return 'FILE';
+    }
+  }
+
+  /// Checks if the attached file is an image
+  bool get isImage {
+    final ext = fileExtension;
+    return ['PNG', 'JPG', 'JPEG'].contains(ext);
+  }
 }
 
 class AnswerModel {
