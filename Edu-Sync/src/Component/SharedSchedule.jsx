@@ -1,12 +1,34 @@
 import React, { useState, useEffect } from "react";
 import {
   Clock, MapPin, User, Edit2, Plus, X, Save, Trash2, 
-  CalendarDays, CheckCircle, Calendar, Loader2, ChevronLeft, ChevronRight, Tag
+  CalendarDays, CheckCircle, Calendar, Loader2, ChevronLeft, ChevronRight, Tag, AlertTriangle
 } from "lucide-react";
 import apiClient from "../services/api";
 import { jwtDecode } from "jwt-decode";
 
-const SharedTimetable = () => {
+// --- DATE HELPER LOGIC ---
+// Calculates the exact Date objects for Monday-Friday of the current week
+const getCurrentWeekDates = () => {
+  const today = new Date();
+  const currentDay = today.getDay(); // 0 is Sunday, 1 is Monday...
+  
+  // If today is Sunday, we want the previous Monday. Otherwise, step back to Monday.
+  const diffToMonday = today.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
+  const monday = new Date(today.setDate(diffToMonday));
+
+  const dates = {};
+  const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  
+  dayNames.forEach((day, index) => {
+    const dateForDay = new Date(monday);
+    dateForDay.setDate(monday.getDate() + index);
+    dates[day] = dateForDay;
+  });
+  
+  return dates;
+};
+
+const SharedSchedule = () => {
   const [userRole, setUserRole] = useState("STUDENT");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,6 +54,9 @@ const SharedTimetable = () => {
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDateEvents, setSelectedDateEvents] = useState(null);
+  
+  // Calculate current week's dates
+  const currentWeekDates = getCurrentWeekDates();
 
   useEffect(() => {
     const token = localStorage.getItem("edusync_token");
@@ -43,23 +68,21 @@ const SharedTimetable = () => {
         console.error("Invalid token");
       }
     }
-
     fetchWeeklySchedule();
     fetchCalendarEvents();
   }, []);
 
   const canEdit = userRole === "CR" || userRole === "PROFESSOR";
 
-  // --- API CALLS (CRASH PROOFED) ---
+  // --- SAFE API CALLS ---
   const fetchWeeklySchedule = async () => {
     try {
       const response = await apiClient.get("/api/v1/schedule/weekly");
-      // SAFEGUARD: Only set schedule if it is genuinely an object
       if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
         setSchedule(response.data);
       }
     } catch (error) {
-      console.warn("Could not fetch timetable. Using empty default.");
+      console.warn("Could not fetch timetable.");
     }
   };
 
@@ -67,21 +90,18 @@ const SharedTimetable = () => {
     setIsLoading(true);
     try {
       const response = await apiClient.get("/api/v1/events/");
-      // SAFEGUARD: Ensure data is an array before sorting to prevent fatal white screen crashes
       const safeData = Array.isArray(response.data) ? response.data : [];
       const sortedEvents = safeData.sort(
-        (a, b) => new Date(a.event_date || 0) - new Date(b.event_date || 0)
+        (a, b) => new Date(a?.event_date || 0) - new Date(b?.event_date || 0)
       );
       setCalendarEvents(sortedEvents);
     } catch (error) {
-      console.error("Error fetching events:", error);
-      setCalendarEvents([]); // Fallback to empty array
+      setCalendarEvents([]); 
     } finally {
       setIsLoading(false);
     }
   };
 
-  // --- LOGIC ---
   const handleAddClass = (day) => {
     if (!canEdit) return;
     setActiveDay(day);
@@ -100,20 +120,15 @@ const SharedTimetable = () => {
     if (!canEdit) return;
     if (window.confirm("Remove this class from the schedule?")) {
       const currentDaySchedule = Array.isArray(schedule[day]) ? schedule[day] : [];
-      setSchedule({
-        ...schedule,
-        [day]: currentDaySchedule.filter((c) => c.id !== classId),
-      });
+      setSchedule({ ...schedule, [day]: currentDaySchedule.filter((c) => c?.id !== classId) });
     }
   };
 
   const handleSaveSlot = (e) => {
     e.preventDefault();
     if (!canEdit) return;
-    
     const currentDaySchedule = Array.isArray(schedule[activeDay]) ? schedule[activeDay] : [];
-    const existingClassIndex = currentDaySchedule.findIndex((c) => c.id === slotFormData.id);
-
+    const existingClassIndex = currentDaySchedule.findIndex((c) => c?.id === slotFormData.id);
     let updatedDaySchedule;
     if (existingClassIndex >= 0) {
       updatedDaySchedule = [...currentDaySchedule];
@@ -121,7 +136,6 @@ const SharedTimetable = () => {
     } else {
       updatedDaySchedule = [...currentDaySchedule, slotFormData];
     }
-
     setSchedule({ ...schedule, [activeDay]: updatedDaySchedule });
     setIsSlotModalOpen(false);
   };
@@ -134,7 +148,7 @@ const SharedTimetable = () => {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     } catch (error) {
-      alert("Failed to publish schedule to the backend.");
+      alert("Failed to publish schedule.");
     } finally {
       setIsPublishing(false);
     }
@@ -144,7 +158,6 @@ const SharedTimetable = () => {
     e.preventDefault();
     if (!canEdit) return;
     setIsSubmittingEvent(true);
-    
     try {
       const formattedDate = new Date(eventFormData.event_date).toISOString();
       await apiClient.post("/api/v1/events/", {
@@ -168,14 +181,13 @@ const SharedTimetable = () => {
       if (!window.confirm("Permanently delete this event?")) return;
       try {
           await apiClient.delete(`/api/v1/events/${eventId}`);
-          setCalendarEvents((prev) => prev.filter((e) => e.id !== eventId));
+          setCalendarEvents((prev) => prev.filter((e) => e?.id !== eventId));
           setSelectedDateEvents(null);
       } catch (error) {
           alert("Failed to delete event.");
       }
   };
 
-  // --- UI CALENDAR HELPERS ---
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
 
@@ -196,7 +208,7 @@ const SharedTimetable = () => {
     for (let day = 1; day <= daysInMonth; day++) {
       const dateString = new Date(year, month, day).toDateString();
       const dayEvents = calendarEvents.filter(
-        (evt) => new Date(evt.event_date || 0).toDateString() === dateString
+        (evt) => new Date(evt?.event_date || 0).toDateString() === dateString
       );
       const hasEvents = dayEvents.length > 0;
       const isToday = new Date().toDateString() === dateString;
@@ -213,7 +225,7 @@ const SharedTimetable = () => {
           <div className="mt-1 w-full space-y-1 overflow-hidden">
             {dayEvents.slice(0, 2).map((evt, idx) => (
               <div key={idx} className="text-[9px] sm:text-[10px] truncate bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold w-full">
-                {evt.title}
+                {evt?.title || "Event"}
               </div>
             ))}
             {dayEvents.length > 2 && <div className="text-[9px] text-slate-500 font-bold pl-1">+{dayEvents.length - 2} more</div>}
@@ -232,73 +244,109 @@ const SharedTimetable = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 flex items-center">
-            <CalendarDays className="w-6 h-6 mr-3 text-teal-600" /> Weekly Schedule
+            <CalendarDays className="w-6 h-6 mr-3 text-teal-600" /> This Week's Schedule
           </h2>
-          <p className="text-slate-500 mt-1 text-sm">
-            {canEdit ? "Modifications here will instantly update the student dashboard." : "Your official class timetable."}
+          <p className="text-sm text-slate-500 mt-1">
+            Displaying timetable and special events for <span className="font-bold text-slate-700">Week of {currentWeekDates["Monday"].toLocaleDateString()}</span>
           </p>
         </div>
         <div className="flex items-center space-x-3 mt-4 sm:mt-0">
           <button onClick={() => setIsCalendarModalOpen(true)} className="text-sm font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 transition-colors px-4 py-2.5 rounded-xl border border-teal-200 flex items-center shadow-sm">
-            <Calendar className="w-4 h-4 mr-2" />
-            {canEdit ? "Manage Events" : "View Full Calendar"}
+            <Calendar className="w-4 h-4 mr-2" /> View Full Calendar
           </button>
           {canEdit && (
             <button onClick={handlePublishTimetable} disabled={isPublishing} className="px-6 py-2.5 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 transition-all shadow-sm flex items-center active:scale-95 text-sm disabled:opacity-70">
-              {isPublishing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Publish Week
+              {isPublishing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Publish Base Timetable
             </button>
           )}
         </div>
       </div>
 
+      {/* WEEKLY GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
         {daysOfWeek.map((day) => {
-          // SAFEGUARD: Guarantee we map over an array to prevent white screen crashes
           const dayClasses = Array.isArray(schedule[day]) ? schedule[day] : [];
+          
+          // 1. Calculate Target Date String for this specific column
+          const targetDateString = currentWeekDates[day].toDateString();
+          
+          // 2. Filter PostgreSQL calendarEvents to see what's happening TODAY
+          const eventsForThisDay = calendarEvents.filter(
+            (evt) => new Date(evt?.event_date || 0).toDateString() === targetDateString
+          );
           
           return (
           <div key={day} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
             <div className="bg-slate-50 border-b border-slate-200 p-4 flex justify-between items-center">
-              <h3 className="font-bold text-slate-800">{day}</h3>
+              <div>
+                 <h3 className="font-bold text-slate-800">{day}</h3>
+                 <p className="text-[10px] font-bold text-slate-500 mt-0.5 tracking-wider uppercase">
+                   {currentWeekDates[day].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                 </p>
+              </div>
               <span className="text-xs font-bold text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full">
-                {dayClasses.length} Classes
+                {dayClasses.length + eventsForThisDay.length} Items
               </span>
             </div>
 
             <div className="p-4 flex-1 space-y-4">
-              {dayClasses.length === 0 ? (
-                <div className="text-center py-8 text-sm text-slate-400 border-2 border-dashed border-slate-100 rounded-xl">
-                  No classes scheduled.
-                </div>
+              {dayClasses.length === 0 && eventsForThisDay.length === 0 ? (
+                <div className="text-center py-8 text-sm text-slate-400 border-2 border-dashed border-slate-100 rounded-xl">Nothing scheduled.</div>
               ) : (
-                dayClasses.map((cls) => (
-                  <div key={cls.id} className="relative group border border-slate-200 rounded-xl p-4 hover:border-teal-300 hover:shadow-md transition-all bg-white">
-                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${cls.type === "Lab" ? "bg-purple-400" : "bg-teal-400"}`}></div>
+                <>
+                  {/* Render SPECIAL CALENDAR EVENTS first */}
+                  {eventsForThisDay.map((evt) => (
+                    <div key={`evt-${evt.id}`} className="relative border border-indigo-200 bg-indigo-50/70 rounded-xl p-4 shadow-sm group">
+                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-indigo-500 rounded-l-xl"></div>
+                      
+                      {canEdit && (
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => handleDeleteEvent(evt.id)} className="p-1.5 text-slate-400 hover:text-red-600 rounded bg-white shadow-sm border border-slate-100"><Trash2 className="w-3 h-3" /></button>
+                        </div>
+                      )}
 
-                    {canEdit && (
-                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1 bg-white shadow-sm rounded-md border border-slate-100 p-1">
-                        <button onClick={() => handleEditClass(day, cls)} className="p-1.5 text-slate-400 hover:text-blue-600 rounded"><Edit2 className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => handleDeleteClass(day, cls.id)} className="p-1.5 text-slate-400 hover:text-red-600 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
+                      <h4 className="font-bold text-indigo-900 text-sm pr-6 leading-tight">{evt.title}</h4>
+                      <span className="inline-block mt-1.5 mb-2 px-2 py-0.5 text-[10px] font-bold uppercase rounded-md tracking-wider bg-indigo-100 text-indigo-700">
+                        Calendar Event
+                      </span>
+                      <div className="space-y-1.5 text-xs text-indigo-800/80 font-medium">
+                        <div className="flex items-center"><Clock className="w-3.5 h-3.5 mr-2 text-indigo-400" /> {new Date(evt.event_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        {evt.location && <div className="flex items-center"><MapPin className="w-3.5 h-3.5 mr-2 text-indigo-400" /> {evt.location}</div>}
                       </div>
-                    )}
-
-                    <h4 className="font-bold text-slate-800 text-sm pr-12 leading-tight">{cls.subject}</h4>
-                    <span className={`inline-block mt-1.5 mb-3 px-2 py-0.5 text-[10px] font-bold uppercase rounded-md tracking-wider ${cls.type === "Lab" ? "bg-purple-50 text-purple-700" : "bg-teal-50 text-teal-700"}`}>
-                      {cls.type}
-                    </span>
-                    <div className="space-y-1.5 text-xs text-slate-600 font-medium">
-                      <div className="flex items-center"><Clock className="w-3.5 h-3.5 mr-2 text-slate-400" /> {cls.time}</div>
-                      <div className="flex items-center"><MapPin className="w-3.5 h-3.5 mr-2 text-slate-400" /> {cls.room}</div>
-                      <div className="flex items-center"><User className="w-3.5 h-3.5 mr-2 text-slate-400" /> {cls.professor}</div>
                     </div>
-                  </div>
-                ))
+                  ))}
+
+                  {/* Render BASE RECURRING TIMETABLE CLASSES second */}
+                  {dayClasses.map((cls, index) => (
+                    <div key={cls?.id || index} className="relative group border border-slate-200 rounded-xl p-4 hover:border-teal-300 hover:shadow-md transition-all bg-white">
+                      <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${cls?.type === "Lab" ? "bg-purple-400" : "bg-teal-400"}`}></div>
+                      
+                      {canEdit && (
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1 bg-white shadow-sm rounded-md border border-slate-100 p-1">
+                          <button onClick={() => handleEditClass(day, cls)} className="p-1.5 text-slate-400 hover:text-blue-600 rounded"><Edit2 className="w-3.5 h-3.5" /></button>
+                          <button onClick={() => handleDeleteClass(day, cls?.id)} className="p-1.5 text-slate-400 hover:text-red-600 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
+                        </div>
+                      )}
+
+                      <h4 className="font-bold text-slate-800 text-sm pr-12 leading-tight">{cls?.subject || "Unknown Class"}</h4>
+                      <span className={`inline-block mt-1.5 mb-3 px-2 py-0.5 text-[10px] font-bold uppercase rounded-md tracking-wider ${cls?.type === "Lab" ? "bg-purple-50 text-purple-700" : "bg-teal-50 text-teal-700"}`}>
+                        {cls?.type || "Lecture"}
+                      </span>
+                      <div className="space-y-1.5 text-xs text-slate-600 font-medium">
+                        <div className="flex items-center"><Clock className="w-3.5 h-3.5 mr-2 text-slate-400" /> {cls?.time || "TBA"}</div>
+                        <div className="flex items-center"><MapPin className="w-3.5 h-3.5 mr-2 text-slate-400" /> {cls?.room || "TBA"}</div>
+                        <div className="flex items-center"><User className="w-3.5 h-3.5 mr-2 text-slate-400" /> {cls?.professor || "TBA"}</div>
+                      </div>
+                    </div>
+                  ))}
+                </>
               )}
             </div>
+            
             {canEdit && (
               <div className="p-4 border-t border-slate-100 bg-slate-50/50 mt-auto">
                 <button onClick={() => handleAddClass(day)} className="w-full py-2 flex items-center justify-center text-sm font-bold text-teal-600 hover:bg-teal-50 rounded-xl transition-colors border border-dashed border-teal-200">
-                  <Plus className="w-4 h-4 mr-1" /> Add Slot
+                  <Plus className="w-4 h-4 mr-1" /> Add Recurring Slot
                 </button>
               </div>
             )}
@@ -310,38 +358,40 @@ const SharedTimetable = () => {
         <div className="fixed bottom-8 right-8 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center animate-in slide-in-from-bottom-5 fade-in duration-300 z-50">
           <CheckCircle className="w-6 h-6 text-teal-400 mr-3" />
           <div>
-            <h4 className="font-bold text-sm">Schedule Published!</h4>
+            <h4 className="font-bold text-sm">Base Schedule Published!</h4>
             <p className="text-xs text-slate-300 mt-0.5">Students can now see the updated timetable.</p>
           </div>
         </div>
       )}
 
+      {/* SLOT EDIT MODAL */}
       {isSlotModalOpen && canEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-slate-200 bg-slate-50">
-              <h3 className="text-xl font-bold text-slate-800">{slotFormData.subject ? "Edit Class" : "Add New Class"} <span className="text-teal-600">({activeDay})</span></h3>
+             <div className="flex justify-between items-center p-6 border-b border-slate-200 bg-slate-50">
+              <h3 className="text-xl font-bold text-slate-800">Manage Slot <span className="text-teal-600">({activeDay})</span></h3>
               <button onClick={() => setIsSlotModalOpen(false)} className="text-slate-400 hover:text-slate-700 bg-white p-1 rounded-full shadow-sm"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleSaveSlot} className="p-6 space-y-4">
-              <div><label className="block text-sm font-bold text-slate-700 mb-1">Subject Name</label><input type="text" required value={slotFormData.subject} onChange={(e) => setSlotFormData({ ...slotFormData, subject: e.target.value, })} className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50" /></div>
+              <input type="text" required value={slotFormData.subject} onChange={(e) => setSlotFormData({ ...slotFormData, subject: e.target.value })} className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50" placeholder="Subject Name" />
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-bold text-slate-700 mb-1">Time Slot</label><input type="text" required value={slotFormData.time} onChange={(e) => setSlotFormData({ ...slotFormData, time: e.target.value })} className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50" /></div>
-                <div><label className="block text-sm font-bold text-slate-700 mb-1">Class Type</label><select value={slotFormData.type} onChange={(e) => setSlotFormData({ ...slotFormData, type: e.target.value })} className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50"><option value="Lecture">Lecture</option><option value="Lab">Lab</option></select></div>
+                <input type="text" required value={slotFormData.time} onChange={(e) => setSlotFormData({ ...slotFormData, time: e.target.value })} className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50" placeholder="Time Slot" />
+                <select value={slotFormData.type} onChange={(e) => setSlotFormData({ ...slotFormData, type: e.target.value })} className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50">
+                  <option value="Lecture">Lecture</option>
+                  <option value="Lab">Lab</option>
+                </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-bold text-slate-700 mb-1">Room/Lab</label><input type="text" required value={slotFormData.room} onChange={(e) => setSlotFormData({ ...slotFormData, room: e.target.value })} className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50" /></div>
-                <div><label className="block text-sm font-bold text-slate-700 mb-1">Professor</label><input type="text" required value={slotFormData.professor} onChange={(e) => setSlotFormData({ ...slotFormData, professor: e.target.value, })} className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50" /></div>
+                <input type="text" required value={slotFormData.room} onChange={(e) => setSlotFormData({ ...slotFormData, room: e.target.value })} className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50" placeholder="Room/Lab" />
+                <input type="text" required value={slotFormData.professor} onChange={(e) => setSlotFormData({ ...slotFormData, professor: e.target.value })} className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50" placeholder="Professor" />
               </div>
-              <div className="pt-4 flex space-x-3 border-t border-slate-100">
-                <button type="button" onClick={() => setIsSlotModalOpen(false)} className="flex-1 py-2.5 text-slate-600 font-bold rounded-xl hover:bg-slate-100 transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 py-2.5 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 transition-colors shadow-sm">Save Slot</button>
-              </div>
+              <button type="submit" className="w-full py-2.5 bg-teal-600 text-white font-bold rounded-xl shadow-sm">Save Slot</button>
             </form>
           </div>
         </div>
       )}
 
+      {/* CALENDAR MODAL */}
       {isCalendarModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-6xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
@@ -352,7 +402,7 @@ const SharedTimetable = () => {
             <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
               <div className={`p-6 overflow-y-auto ${canEdit || selectedDateEvents ? "lg:w-2/3 border-b lg:border-b-0 lg:border-r border-slate-200" : "w-full"}`}>
                 <div className="flex justify-between items-center mb-6">
-                  <h4 className="text-xl font-bold text-slate-800">{currentDate.toLocaleString("default", { month: "long", year: "numeric", })}</h4>
+                  <h4 className="text-xl font-bold text-slate-800">{currentDate.toLocaleString("default", { month: "long", year: "numeric" })}</h4>
                   <div className="flex space-x-2">
                     <button onClick={handlePrevMonth} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600"><ChevronLeft className="w-5 h-5" /></button>
                     <button onClick={handleNextMonth} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600"><ChevronRight className="w-5 h-5" /></button>
@@ -412,4 +462,4 @@ const SharedTimetable = () => {
   );
 };
 
-export default SharedTimetable;
+export default SharedSchedule;
