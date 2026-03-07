@@ -61,7 +61,12 @@ function App() {
             <Route path="messages" element={<CRMessages />} />
             <Route path="notifications" element={<CRNotifications />} />
             <Route path="profile" element={<SharedProfile />} />
+            <Route path="doc-chat" element={<SharedDocumentChat />} />
+            <Route path="quiz" element={<AiQuizGenerator />} />
+            <Route path="summary" element={<SharedSmartSummarizer />} />
+            <Route path="infographic" element={<SharedInfographicMaker />} />
           </Route>
+          {/*Student routes */}
           <Route path="/dashboard/student" element={<StudentLayout />}>
             <Route index element={<StudentHome />} />
             <Route path="doc-chat" element={<SharedDocumentChat />} />
