@@ -3,6 +3,22 @@ import 'package:flutter/material.dart';
 import '../../../data/repositories/study_room_repository.dart';
 import '../../../data/models/study_session_model.dart';
 
+class ChatMessage {
+  final String sender;
+  final String text;
+  final DateTime timestamp;
+  final bool isMe;
+  final bool isSystem;
+
+  ChatMessage({
+    required this.sender,
+    required this.text,
+    required this.timestamp,
+    required this.isMe,
+    this.isSystem = false,
+  });
+}
+
 class Participant {
   final String username;
   final DateTime joinedAt;
@@ -30,6 +46,7 @@ class StudyRoomViewModel extends ChangeNotifier {
   DateTime? _myJoinTime;
   String? _myUsername;
   final Map<String, Participant> _participants = {};
+  final List<ChatMessage> _messages = [];
   
   Timer? _uiTicker;
   StreamSubscription? _messageSubscription;
@@ -39,6 +56,7 @@ class StudyRoomViewModel extends ChangeNotifier {
   String? get currentRoomId => _currentRoomId;
   String? get myUsername => _myUsername?.split('|').first;
   List<Participant> get participants => _participants.values.toList();
+  List<ChatMessage> get messages => _messages;
   String? get error => _error;
   StudyStatsModel? get stats => _stats;
 
@@ -106,8 +124,40 @@ class StudyRoomViewModel extends ChangeNotifier {
               username: displaySender, 
               joinedAt: DateTime.fromMillisecondsSinceEpoch(joinTimeSecs * 1000),
             );
+
+            _messages.add(ChatMessage(
+              sender: displaySender,
+              text: 'joined the room',
+              timestamp: DateTime.now(),
+              isMe: false,
+              isSystem: true,
+            ));
           } else if (isLeave) {
             _participants.remove(rawSender);
+
+            _messages.add(ChatMessage(
+              sender: displaySender,
+              text: 'left the room',
+              timestamp: DateTime.now(),
+              isMe: false,
+              isSystem: true,
+            ));
+          }
+        }
+        else if (type == 'chat') {
+          final rawSender = msg['username'] as String?;
+          final txt = msg['message'] as String?;
+          if (rawSender != null && txt != null) {
+            // Ignore server echo of our own messages to avoid duplicates
+            if (rawSender == _myUsername) return;
+
+            final displaySender = rawSender.split('|').first.trim();
+            _messages.add(ChatMessage(
+              sender: displaySender,
+              text: txt,
+              timestamp: DateTime.now(),
+              isMe: false,
+            ));
           }
         }
         
@@ -154,6 +204,26 @@ class StudyRoomViewModel extends ChangeNotifier {
     _myJoinTime = null;
     _participants.clear();
     notifyListeners();
+  }
+
+  void sendChatMessage(String text) {
+    if (_isConnected && text.trim().isNotEmpty) {
+      final msgTxt = text.trim();
+      
+      // Optimistic UI update
+      _messages.add(ChatMessage(
+        sender: myUsername ?? 'Me',
+        text: msgTxt,
+        timestamp: DateTime.now(),
+        isMe: true,
+      ));
+      notifyListeners();
+
+      _repo.sendMessage({
+        'type': 'chat',
+        'message': msgTxt,
+      });
+    }
   }
 
   @override

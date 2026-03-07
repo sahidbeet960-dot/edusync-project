@@ -426,34 +426,68 @@ class _StudyRoomsScreenState extends State<StudyRoomsScreen> {
                 ),
               ),
 
-              // Participant Grid 
+              // Content Area: Grid + Chat
               Expanded(
-                child: GridView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.85,
-                  ),
-                  itemCount: roomVM.participants.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return _buildParticipantCard(
-                        name: roomVM.myUsername ?? 'Me',
-                        activeTime: roomVM.myActiveTime,
-                        isMe: true,
-                      );
-                    }
-                    
-                    final peer = roomVM.participants[index - 1];
-                    return _buildParticipantCard(
-                      name: peer.username,
-                      activeTime: peer.activeTime,
-                      isMe: false,
-                    );
-                  },
+                child: Column(
+                  children: [
+                    // Participant Grid
+                    Expanded(
+                      flex: 3, // Balances screen space with chat
+                      child: GridView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 0.85, // Fixed RenderFlex overflow
+                        ),
+                        itemCount: roomVM.participants.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return _buildParticipantCard(
+                              name: roomVM.myUsername ?? 'Me',
+                              activeTime: roomVM.myActiveTime,
+                              isMe: true,
+                            );
+                          }
+                          
+                          final peer = roomVM.participants[index - 1];
+                          return _buildParticipantCard(
+                            name: peer.username,
+                            activeTime: peer.activeTime,
+                            isMe: false,
+                          );
+                        },
+                      ),
+                    ),
+                    const Divider(color: Colors.white24, height: 1),
+                    // Chat Area
+                    Expanded(
+                      flex: 4,
+                      child: Container(
+                        color: Colors.white.withValues(alpha: 0.01),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: ListView.builder(
+                                reverse: true,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: roomVM.messages.length,
+                                itemBuilder: (context, index) {
+                                  // Reversing list so latest is at bottom
+                                  final msg = roomVM.messages[roomVM.messages.length - 1 - index];
+                                  return _buildChatMessage(msg);
+                                },
+                              ),
+                            ),
+                            _buildChatInput(roomVM),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -548,6 +582,130 @@ class _StudyRoomsScreenState extends State<StudyRoomsScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatMessage(ChatMessage msg) {
+    if (msg.isSystem) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '${msg.sender} ${msg.text}',
+              style: TextStyle(
+                color: AppColors.textSecondaryDark.withValues(alpha: 0.7),
+                fontSize: 11,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Align(
+        alignment: msg.isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: msg.isMe ? AppColors.primary : AppColors.surfaceDark.withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(16).copyWith(
+              bottomRight: msg.isMe ? const Radius.circular(4) : null,
+              bottomLeft: !msg.isMe ? const Radius.circular(4) : null,
+            ),
+            border: Border.all(
+              color: msg.isMe ? AppColors.primaryLight.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.05),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!msg.isMe) ...[
+                Text(
+                  msg.sender.toUpperCase(),
+                  style: const TextStyle(
+                    color: AppColors.primaryLight,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+              ],
+              Text(
+                msg.text,
+                style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  final _chatController = TextEditingController();
+
+  Widget _buildChatInput(StudyRoomViewModel roomVM) {
+    return Container(
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 24),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundDark,
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: CustomTextField(
+                controller: _chatController,
+                hint: 'Send a message...',
+                onSubmitted: (txt) {
+                  if (txt.trim().isNotEmpty) {
+                    roomVM.sendChatMessage(txt);
+                    _chatController.clear();
+                  }
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: () {
+                final txt = _chatController.text.trim();
+                if (txt.isNotEmpty) {
+                  roomVM.sendChatMessage(txt);
+                  _chatController.clear();
+                  FocusScope.of(context).unfocus();
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+          ],
         ),
       ),
     );
