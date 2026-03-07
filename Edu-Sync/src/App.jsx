@@ -11,6 +11,7 @@ import Registration from "./AUTH/Registration";
 
 // shared component for all three roles
 import SharedProfile from "./Component/SharedProfile";
+import SharedResources from "./Component/SharedResources";
 // professor component
 import ProfessorLayout from "./Professor/ProfessorLayout";
 import ProfessorHome from "./Professor/ProfessorHome";
@@ -34,6 +35,7 @@ function App() {
             <Route path="messages" element={<MessagesPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="profile" element={<SharedProfile/>}/>
+            <Route path="resources" element={<SharedResources/>}/>
           </Route>
         </Routes>
       </div>
