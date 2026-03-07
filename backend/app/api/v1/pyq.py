@@ -9,6 +9,8 @@ from app.models.pyq import PYQPaper
 from app.models.users import User, RoleEnum
 from app.schemas.pyq import PYQResponse
 from app.api.dependencies import get_current_user
+from app.models.pyq import ExtractedExamData, TopicImportance
+from app.schemas.pyq import ExtractedDataCreate, TopicImportanceUpdate, TopicImportanceResponse
 
 router = APIRouter()
 
@@ -96,3 +98,35 @@ async def delete_pyq(
     await db.commit()
     
     return None
+
+
+@router.post("/analytics/extract", status_code=201)
+async def save_extracted_data(
+    data: ExtractedDataCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    """AI hits this endpoint after processing a PDF."""
+    new_extraction = ExtractedExamData(
+        document_id=data.document_id,
+        topic=data.topic,
+        marks=data.marks,
+        frequency=data.frequency
+    )
+    db.add(new_extraction)
+    await db.commit()
+    return {"message": "Extracted data saved successfully"}
+
+
+@router.get("/analytics/topics/{subject}", response_model=List[TopicImportanceResponse])
+async def get_topic_importance(
+    subject: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """The Frontend hits this to build the Probability Map UI."""
+    # Fetch topics for the subject, ordered by highest marks first
+    query = select(TopicImportance).where(
+        TopicImportance.subject.ilike(f"%{subject}%")
+    ).order_by(TopicImportance.total_marks_contribution.desc())
+    
+    result = await db.execute(query)
+    return result.scalars().all()
