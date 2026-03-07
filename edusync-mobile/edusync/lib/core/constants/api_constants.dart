@@ -4,6 +4,8 @@ class ApiConstants {
   // Production backend
   static const String baseUrl =
       'API_URL';
+  
+  static const String wsBaseUrl = 'WebSocket_URL';
   static const String apiPrefix = '/api/v1';
 
 
@@ -36,7 +38,15 @@ class ApiConstants {
       '$apiPrefix/forum/questions/$questionId/answers';
   static String forumAnswerVote(String answerId) =>
       '$apiPrefix/forum/answers/$answerId/vote';
+
+    // Study Room (WebSocket) - UPDATED WITH userId
+  static String studyRoomWs(String roomId, String username, int userId) =>
+      '$wsBaseUrl$apiPrefix/rooms/ws/$roomId?username=${Uri.encodeQueryComponent(username)}&user_id=$userId';
+
+  // Study Sessions & Stats
+  static const String studySessions = '$apiPrefix/study/sessions';
+  static const String studyMyStats = '$apiPrefix/study/my-stats';
   
-  
+
 
 }
