@@ -11,6 +11,9 @@ import SharedForum from "./Component/SharedForum";
 import SharedSehedule from "./Component/SharedSchedule"
 import AiQuizGenerator from "./Component/AiQuizGenerator"
 import StudyRoom from "./Component/AiQuizGenerator";
+import SharedDocumentChat from "./Component/SharedDocumentChat";
+import SharedSmartSummarizer from "./Component/SharedSmartSummarizer";
+import SharedInfographicMaker from "./Component/SharedInfographicMaker";
 // professor component
 import ProfessorLayout from "./Professor/ProfessorLayout";
 import ProfessorHome from "./Professor/ProfessorHome";
