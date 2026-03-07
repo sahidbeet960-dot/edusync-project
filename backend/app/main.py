@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1 import auth, users, materials, forum, events, rooms, study
+from app.api.v1 import auth, users, materials, forum, events, rooms, study, pyq
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -26,6 +26,7 @@ app.include_router(forum.router, prefix="/api/v1/forum", tags=["Doubt Forum"])
 app.include_router(events.router, prefix="/api/v1/events")
 app.include_router(rooms.router, prefix="/api/v1/rooms")
 app.include_router(study.router, prefix="/api/v1/study")
+app.include_router(pyq.router, prefix="/api/v1/pyqs", tags=["PYQ Analyzer"])
 
 @app.get("/")
 async def root():
