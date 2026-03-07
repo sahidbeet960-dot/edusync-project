@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api', // according to the local host url it will changes. 
+  baseURL: 'https://edusync-project-production.up.railway.app/', // according to the local host url it will changes. 
   headers: {
     'Content-Type': 'application/json',
   },
