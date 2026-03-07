@@ -14,6 +14,7 @@ class CustomTextField extends StatefulWidget {
   final int maxLines;
   final bool enabled;
   final void Function(String)? onChanged;
+  final void Function(String)? onSubmitted;
   final FocusNode? focusNode;
 
   const CustomTextField({
@@ -29,6 +30,7 @@ class CustomTextField extends StatefulWidget {
     this.maxLines = 1,
     this.enabled = true,
     this.onChanged,
+    this.onSubmitted,
     this.focusNode,
   });
 
@@ -116,6 +118,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 maxLines: widget.obscureText ? 1 : widget.maxLines,
                 enabled: widget.enabled,
                 onChanged: widget.onChanged,
+                onFieldSubmitted: widget.onSubmitted,
                 focusNode: _internalFocusNode,
                 style: const TextStyle(
                   color: AppColors.textPrimaryDark,

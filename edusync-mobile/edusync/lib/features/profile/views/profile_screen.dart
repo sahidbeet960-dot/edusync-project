@@ -8,6 +8,7 @@ import '../../../core/widgets/gradient_button.dart';
 import '../../../core/widgets/avatar_widget.dart';
 import '../../../core/widgets/gradient_scaffold.dart';
 import '../../auth/viewmodels/auth_viewmodel.dart';
+import 'edit_profile_dialog.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -73,11 +74,34 @@ class ProfileScreen extends StatelessWidget {
                     showBorder: true,
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    user?.fullName ?? 'Student',
-                    style: AppTextStyles.headlineSmall.copyWith(
-                      color: AppColors.textPrimaryDark,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        user?.fullName ?? 'Student',
+                        style: AppTextStyles.headlineSmall.copyWith(
+                          color: AppColors.textPrimaryDark,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (user != null)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.edit,
+                                color: AppColors.primary, size: 20),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (_) => EditProfileDialog(user: user),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(

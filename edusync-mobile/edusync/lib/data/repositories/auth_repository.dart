@@ -23,6 +23,25 @@ class AuthRepository {
     return UserModel.fromJson(response.data);
   }
 
+  Future<UserModel> updateProfile({
+    String? fullName,
+    String? department,
+    int? semester,
+    String? bio,
+  }) async {
+    final body = <String, dynamic>{};
+    if (fullName != null && fullName.isNotEmpty) body['full_name'] = fullName;
+    if (department != null && department.isNotEmpty) body['department'] = department;
+    if (semester != null) body['semester'] = semester;
+    if (bio != null && bio.isNotEmpty) body['bio'] = bio;
+
+    final response = await _api.patch(
+      ApiConstants.updateUserProfile,
+      data: body,
+    );
+    return UserModel.fromJson(response.data);
+  }
+
   Future<Map<String, dynamic>> register({
     required String email,
     required String password,

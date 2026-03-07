@@ -81,7 +81,7 @@ class MaterialsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final material = await _repo.createMaterial(
+      await _repo.createMaterial(
         title: title,
         fileBytes: fileBytes,
         fileName: fileName,
@@ -89,7 +89,8 @@ class MaterialsViewModel extends ChangeNotifier {
         semester: semester,
         tags: tags,
       );
-      _materials.insert(0, material);
+      // Since backend might return a string, we reload the materials to get the actual created item.
+      await loadMaterials(forceRefresh: true);
       _isUploading = false;
       notifyListeners();
       return true;

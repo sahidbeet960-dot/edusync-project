@@ -3,6 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../materials/views/pdf_viewer_screen.dart';
+import '../../materials/views/txt_viewer_screen.dart';
+import '../../materials/views/doc_viewer_screen.dart';
+import '../../materials/views/image_viewer_screen.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -353,6 +359,59 @@ class _ForumScreenState extends State<ForumScreen> {
 
                   const SizedBox(height: 14),
 
+                  // ─── Attachment Preview ───
+                  if (question.fileUrl != null && question.fileUrl!.isNotEmpty)
+                    if (question.isImage)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: GestureDetector(
+                          onTap: () => _openAttachment(context, question),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxHeight: 200),
+                              child: Image.network(
+                                question.fileUrl!,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const SizedBox.shrink(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: GestureDetector(
+                          onTap: () => _openAttachment(context, question),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.attach_file_rounded, size: 16, color: Color(0xFF6C63FF)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'View Attachment',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
                   // ─── Footer ───
                   Row(
                     children: [
@@ -392,6 +451,65 @@ class _ForumScreenState extends State<ForumScreen> {
         ),
       ),
     );
+  }
+
+  // ─── ATTACHMENT HANDLER ───
+
+  void _openAttachment(BuildContext context, QuestionModel question) async {
+    final ext = question.fileExtension;
+    if (ext == 'PDF') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PdfViewerScreen(
+            pdfUrl: question.fileUrl!,
+            title: question.title,
+          ),
+        ),
+      );
+    } else if (ext == 'TXT') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TxtViewerScreen(
+            txtUrl: question.fileUrl!,
+            title: question.title,
+          ),
+        ),
+      );
+    } else if (ext == 'DOC' || ext == 'DOCX') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DocViewerScreen(
+            docUrl: question.fileUrl!,
+            title: question.title,
+          ),
+        ),
+      );
+    } else if (question.isImage) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ImageViewerScreen(
+            imageUrl: question.fileUrl!,
+            title: question.title,
+          ),
+        ),
+      );
+    } else {
+      HapticFeedback.lightImpact();
+      final uri = Uri.parse(question.fileUrl!);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not open attachment')),
+          );
+        }
+      }
+    }
   }
 
   // ─── QUESTION DETAIL (Full-screen style bottom sheet) ───
@@ -518,6 +636,76 @@ class _ForumScreenState extends State<ForumScreen> {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 16),
+
+                        // Attachment section
+                        if (question.fileUrl != null && question.fileUrl!.isNotEmpty)
+                          if (question.isImage)
+                            GestureDetector(
+                              onTap: () => _openAttachment(context, question),
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Image.network(
+                                    question.fileUrl!,
+                                    width: double.infinity,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        const SizedBox.shrink(),
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            GestureDetector(
+                              onTap: () => _openAttachment(context, question),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF6C63FF).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFF6C63FF).withValues(alpha: 0.2)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.insert_drive_file_rounded, color: Color(0xFF6C63FF), size: 20),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Attached Document',
+                                            style: TextStyle(
+                                              color: AppColors.textPrimaryDark,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Tap to view file',
+                                            style: TextStyle(
+                                              color: AppColors.textSecondaryDark.withValues(alpha: 0.8),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(Icons.open_in_new_rounded, color: Color(0xFF6C63FF), size: 18),
+                                  ],
+                                ),
+                              ),
+                            ),
 
                         const SizedBox(height: 28),
 
@@ -890,6 +1078,9 @@ class _ForumScreenState extends State<ForumScreen> {
   void _showAskQuestionSheet(BuildContext context) {
     final titleCtl = TextEditingController();
     final contentCtl = TextEditingController();
+    PlatformFile? selectedFile;
+    List<int>? fileBytes;
+    bool isUploading = false;
 
     showModalBottomSheet(
       context: context,
@@ -903,86 +1094,195 @@ class _ForumScreenState extends State<ForumScreen> {
           24, 24, 24,
           MediaQuery.of(ctx).viewInsets.bottom + 24,
         ),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 28),
-
-              // Header
-              Row(
+        child: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6C63FF), Color(0xFF9C6AFF)],
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 20),
                   ),
-                  const SizedBox(width: 14),
-                  Text(
-                    'Ask a Doubt',
-                    style: AppTextStyles.headlineSmall.copyWith(
-                      color: AppColors.textPrimaryDark,
-                      fontWeight: FontWeight.w800,
+                  const SizedBox(height: 28),
+
+                  // Header
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF6C63FF), Color(0xFF9C6AFF)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 14),
+                      Text(
+                        'Ask a Doubt',
+                        style: AppTextStyles.headlineSmall.copyWith(
+                          color: AppColors.textPrimaryDark,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  CustomTextField(
+                    controller: titleCtl,
+                    label: 'TITLE',
+                    hint: "What's your question about?",
+                    prefixIcon: Icons.title_rounded,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: contentCtl,
+                    label: 'DETAILS',
+                    hint: 'Explain your doubt in detail...',
+                    maxLines: 5,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // File Picker UI
+                  GestureDetector(
+                    onTap: selectedFile != null
+                        ? null
+                        : () async {
+                            HapticFeedback.lightImpact();
+                            try {
+                              setState(() => isUploading = true);
+                              final result = await FilePicker.platform.pickFiles(
+                                type: FileType.custom,
+                                allowedExtensions: ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'png', 'jpg', 'jpeg'],
+                                withData: true,
+                              );
+                              if (result != null && result.files.isNotEmpty) {
+                                final file = result.files.first;
+                                // limit file size to 10MB approx
+                                if (file.size > 10 * 1024 * 1024) {
+                                  ScaffoldMessenger.of(ctx).showSnackBar(
+                                    const SnackBar(content: Text('File is too large (max 10MB)')),
+                                  );
+                                  setState(() {
+                                    selectedFile = null;
+                                    fileBytes = null;
+                                    isUploading = false;
+                                  });
+                                  return;
+                                }
+                                setState(() {
+                                  selectedFile = file;
+                                  fileBytes = file.bytes;
+                                  isUploading = false;
+                                });
+                              } else {
+                                setState(() => isUploading = false);
+                              }
+                            } catch (e) {
+                              setState(() => isUploading = false);
+                            }
+                          },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: selectedFile != null
+                            ? const Color(0xFF6C63FF).withValues(alpha: 0.1)
+                            : Colors.white.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: selectedFile != null
+                              ? const Color(0xFF6C63FF).withValues(alpha: 0.3)
+                              : Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            selectedFile != null ? Icons.insert_drive_file_rounded : Icons.attach_file_rounded,
+                            color: selectedFile != null ? const Color(0xFF6C63FF) : AppColors.textSecondaryDark,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: isUploading
+                                ? const Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                  )
+                                : Text(
+                                    selectedFile != null ? selectedFile!.name : 'Optional: Attach a file',
+                                    style: TextStyle(
+                                      color: selectedFile != null
+                                          ? AppColors.textPrimaryDark
+                                          : AppColors.textSecondaryDark,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                          ),
+                          if (selectedFile != null)
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedFile = null;
+                                  fileBytes = null;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.close_rounded, size: 16, color: AppColors.error),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  GradientButton(
+                    text: 'Post Question',
+                    icon: Icons.send_rounded,
+                    onPressed: () {
+                      if (titleCtl.text.trim().isEmpty || contentCtl.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(ctx).showSnackBar(
+                          const SnackBar(content: Text('Please provide a title and details')),
+                        );
+                        return;
+                      }
+                      HapticFeedback.mediumImpact();
+                      context.read<ForumViewModel>().createQuestion(
+                        title: titleCtl.text.trim(),
+                        content: contentCtl.text.trim(),
+                        fileBytes: fileBytes,
+                        fileName: selectedFile?.name,
+                      );
+                      if (context.mounted) {
+                        Navigator.pop(ctx);
+                      }
+                    },
                   ),
                 ],
               ),
-
-              const SizedBox(height: 24),
-
-              CustomTextField(
-                controller: titleCtl,
-                label: 'TITLE',
-                hint: "What's your question about?",
-                prefixIcon: Icons.title_rounded,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: contentCtl,
-                label: 'DETAILS',
-                hint: 'Explain your doubt in detail...',
-                maxLines: 5,
-              ),
-
-              const SizedBox(height: 28),
-
-              GradientButton(
-                text: 'Post Question',
-                icon: Icons.send_rounded,
-                onPressed: () {
-                  if (titleCtl.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      const SnackBar(content: Text('Please provide a title')),
-                    );
-                    return;
-                  }
-                  HapticFeedback.mediumImpact();
-                  context.read<ForumViewModel>().createQuestion(
-                    title: titleCtl.text.trim(),
-                    content: contentCtl.text.trim(),
-                  );
-                  Navigator.pop(ctx);
-                },
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

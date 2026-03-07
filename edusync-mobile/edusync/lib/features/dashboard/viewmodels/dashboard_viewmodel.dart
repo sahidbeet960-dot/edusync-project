@@ -27,6 +27,7 @@ class DashboardViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // With MaterialRepository properly imported, this compiles flawlessly.
       final results = await Future.wait([
         _calendarRepo.getEvents(),
         _materialRepo.getMaterials(),
@@ -37,8 +38,7 @@ class DashboardViewModel extends ChangeNotifier {
           .take(5)
           .toList();
 
-      _recentMaterials =
-          (results[1] as List<MaterialModel>).take(10).toList();
+      _recentMaterials = (results[1] as List<MaterialModel>).take(10).toList();
           
       _hasLoaded = true;
     } catch (e) {

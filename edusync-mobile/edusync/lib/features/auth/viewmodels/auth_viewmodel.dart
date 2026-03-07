@@ -57,6 +57,35 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateProfile({
+    String? fullName,
+    String? department,
+    int? semester,
+    String? bio,
+  }) async {
+    _state = AuthState.loading;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final updatedUser = await _authRepo.updateProfile(
+        fullName: fullName,
+        department: department,
+        semester: semester,
+        bio: bio,
+      );
+      _user = updatedUser;
+      _state = AuthState.authenticated;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = _friendlyError(e);
+      _state = AuthState.authenticated; // Keep authenticated state
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> register({
     required String email,
     required String password,
