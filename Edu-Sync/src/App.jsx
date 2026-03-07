@@ -65,6 +65,7 @@ function App() {
             <Route path="quiz" element={<AiQuizGenerator />} />
             <Route path="summary" element={<SharedSmartSummarizer />} />
             <Route path="infographic" element={<SharedInfographicMaker />} />
+            <Route path="analyzer" element={<AiChatBot />} />
           </Route>
           {/*Student routes */}
           <Route path="/dashboard/student" element={<StudentLayout />}>
