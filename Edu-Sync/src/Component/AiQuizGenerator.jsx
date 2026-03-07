@@ -10,11 +10,18 @@ import {
   History,
   AlertCircle,
   Loader2,
+  BookOpen
 } from "lucide-react";
 import axios from "axios";
+import apiClient from "../services/api"; // Added API client import
+
 const AIQuizGenerator = () => {
   const AI_BASE_URL = "https://edusync-ai-latest.onrender.com";
   const [step, setStep] = useState("setup");
+
+  // --- Material Hub State ---
+  const [materials, setMaterials] = useState([]);
+  const [isLoadingMaterials, setIsLoadingMaterials] = useState(true);
 
   // --- Form State ---
   const [docTitle, setDocTitle] = useState("");
@@ -31,11 +38,30 @@ const AIQuizGenerator = () => {
   // --- History State ---
   const [quizHistory, setQuizHistory] = useState([]);
 
-  // Load history from local storage on mount
+  // Load history from local storage and fetch materials on mount
   useEffect(() => {
     const savedHistory = localStorage.getItem("edusync_quiz_history");
     if (savedHistory) setQuizHistory(JSON.parse(savedHistory));
+
+    fetchMaterials();
   }, []);
+
+  const fetchMaterials = async () => {
+    setIsLoadingMaterials(true);
+    try {
+      const response = await apiClient.get('/api/v1/materials/');
+      // Filter for verified notes only, exactly like SharedResources
+      const verifiedNotesOnly = response.data.filter(file => 
+        file.is_verified === true && file.tags !== 'Notice' && file.tags !== 'Syllabus'
+      );
+      setMaterials(verifiedNotesOnly);
+    } catch (err) {
+      console.error("Error fetching materials:", err);
+      setError("Failed to load study materials from the hub.");
+    } finally {
+      setIsLoadingMaterials(false);
+    }
+  };
 
   // --- Timer Logic ---
   useEffect(() => {
@@ -54,13 +80,12 @@ const AIQuizGenerator = () => {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  
   const handleGenerateQuiz = async (e) => {
     e.preventDefault();
     setError("");
 
     if (!docTitle.trim() || !docUrl.trim()) {
-      return setError("Please provide both a document title and a valid URL.");
+      return setError("Please select a valid study material.");
     }
     let safeUrl = docUrl.trim();
     if (!safeUrl.startsWith("http://") && !safeUrl.startsWith("https://")) {
@@ -117,7 +142,7 @@ const AIQuizGenerator = () => {
         setError(errorDetail);
       } else {
         setError(
-          "Failed to generate quiz. Please check the URL and try again.",
+          "Failed to generate quiz. AI could not process the selected document.",
         );
       }
 
@@ -194,8 +219,7 @@ const AIQuizGenerator = () => {
                 AI Study Quiz Generator
               </h2>
               <p className="text-sm text-slate-500">
-                Paste a link to your notes or syllabus, and AI will test your
-                knowledge.
+                Select a document from your academic vault, and AI will test your knowledge.
               </p>
             </div>
           </div>
@@ -207,32 +231,39 @@ const AIQuizGenerator = () => {
           )}
 
           <div className="space-y-5">
+            {/* Material Selection Dropdown */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">
-                Topic / Document Title
+              <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center">
+                <BookOpen className="w-4 h-4 mr-2 text-indigo-500" />
+                Select Study Material
               </label>
-              <input
-                type="text"
-                required
-                value={docTitle}
-                onChange={(e) => setDocTitle(e.target.value)}
-                placeholder="e.g., Chapter 4: Operating Systems"
-                className="w-full h-12 border border-slate-200 rounded-xl px-4 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">
-                Public URL of Document
-              </label>
-              <input
-                type="url"
-                required
-                value={docUrl}
-                onChange={(e) => setDocUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full h-12 border border-slate-200 rounded-xl px-4 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50"
-              />
+              
+              {isLoadingMaterials ? (
+                <div className="w-full h-12 border border-slate-200 rounded-xl px-4 flex items-center bg-slate-50 text-slate-500">
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Loading materials...
+                </div>
+              ) : (
+                <select
+                  required
+                  value={docUrl}
+                  onChange={(e) => {
+                    const selectedUrl = e.target.value;
+                    setDocUrl(selectedUrl);
+                    const selectedMat = materials.find(m => m.file_url === selectedUrl);
+                    if (selectedMat) {
+                      setDocTitle(selectedMat.title);
+                    }
+                  }}
+                  className="w-full h-12 border border-slate-200 rounded-xl px-4 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 appearance-none cursor-pointer"
+                >
+                  <option value="" disabled>-- Choose a verified document --</option>
+                  {materials.map(mat => (
+                    <option key={mat.id} value={mat.file_url}>
+                      {mat.title} (Sem {mat.semester} • {mat.tags})
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div>
@@ -253,7 +284,8 @@ const AIQuizGenerator = () => {
 
           <button
             type="submit"
-            className="mt-8 w-full h-12 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center"
+            disabled={!docUrl || isLoadingMaterials}
+            className="mt-8 w-full h-12 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <BrainCircuit className="w-5 h-5 mr-2" /> Generate Smart Quiz
           </button>
@@ -476,6 +508,6 @@ const AIQuizGenerator = () => {
       {step === "results" && ResultsView()}
     </div>
   );
-};;;
+};
 
 export default AIQuizGenerator;

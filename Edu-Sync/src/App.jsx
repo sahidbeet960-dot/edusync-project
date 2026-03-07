@@ -9,13 +9,15 @@ import Registration from "./AUTH/Registration";
 import SharedProfile from "./Component/SharedProfile";
 import SharedResources from "./Component/SharedResources";
 import SharedForum from "./Component/SharedForum";
-import SharedTimetable from "./Component/SharedSchedule";
+import SharedSchedule from "./Component/SharedSchedule"; 
 import AiQuizGenerator from "./Component/AiQuizGenerator";
 import StudyRoom from "./Component/studyRoom";
 import SharedDocumentChat from "./Component/SharedDocumentChat";
 import SharedSmartSummarizer from "./Component/SharedSmartSummarizer";
 import SharedInfographicMaker from "./Component/SharedInfographicMaker";
-import AiChatBot from "./Component/AiChatBot";
+
+// The AI PYQ Analyzer component
+import PYQAnalyzer from "./Component/PYQAnalyzer";
 
 // professor component
 import ProfessorLayout from "./Professor/ProfessorLayout";
@@ -48,10 +50,12 @@ function App() {
           {/* PROFESSOR ROUTES */}
           <Route path="/dashboard/professor" element={<ProfessorLayout />}>
             <Route index element={<ProfessorHome />} />
-            {/* ALIASES: Guarantees the sidebar link never hits a blank screen */}
-            <Route path="schedule" element={<SharedTimetable />} />
-            <Route path="events" element={<SharedTimetable />} />
-            <Route path="calendar" element={<SharedTimetable />} />
+            
+            {/* ALIASES: Guarantees the Professor sidebar link never hits a blank screen */}
+            <Route path="schedule" element={<SharedSchedule />} />
+            <Route path="events" element={<SharedSchedule />} />
+            <Route path="calendar" element={<SharedSchedule />} />
+            <Route path="timetable" element={<SharedSchedule />} />
             
             <Route path="messages" element={<MessagesPage />} />
             <Route path="notifications" element={<NotificationPage />} />
@@ -63,11 +67,11 @@ function App() {
           {/* CR ROUTES */}
           <Route path="/dashboard/cr" element={<CRLayout />}>
             <Route index element={<CRHome />} />
-            <Route path="schedule" element={<SharedTimetable />} />
+            <Route path="schedule" element={<SharedSchedule />} />
             <Route path="discussions" element={<SharedForum />} />
             <Route path="resources" element={<SharedResources />} />
             
-            {/* ADDED CR STUDY ROOM */}
+            {/* CR STUDY ROOM */}
             <Route path="study-room" element={<StudyRoom />} />
             <Route path="live-class" element={<StudyRoom />} />
             
@@ -78,7 +82,9 @@ function App() {
             <Route path="quiz" element={<AiQuizGenerator />} />
             <Route path="summary" element={<SharedSmartSummarizer />} />
             <Route path="infographic" element={<SharedInfographicMaker />} />
-            <Route path="analyzer" element={<AiChatBot />} />
+            
+            {/* AI PYQ ANALYZER ROUTE */}
+            <Route path="analyzer" element={<PYQAnalyzer />} />
           </Route>
           
           {/* STUDENT ROUTES */}
@@ -88,7 +94,7 @@ function App() {
             <Route path="quiz" element={<AiQuizGenerator />} />
             <Route path="summary" element={<SharedSmartSummarizer />} />
             <Route path="infographic" element={<SharedInfographicMaker />} />
-            <Route path="schedule" element={<SharedTimetable />} />
+            <Route path="schedule" element={<SharedSchedule />} />
             <Route path="discussions" element={<SharedForum />} />
             <Route path="resources" element={<SharedResources />} />
             <Route path="messages" element={<StudentMessages />} />
@@ -96,7 +102,11 @@ function App() {
             <Route path="profile" element={<SharedProfile />} />
             <Route path="live-class" element={<StudyRoom />} />
             <Route path="study-room" element={<StudyRoom />} />
-            <Route path="ai-assistance" element={<AiChatBot />} />
+            
+            {/* AI PYQ ANALYZER ALIASES */}
+            <Route path="ai-assistance" element={<PYQAnalyzer />} />
+            <Route path="analyzer" element={<PYQAnalyzer />} />
+            <Route path="topic-importance" element={<PYQAnalyzer />} />
           </Route>
         </Routes>
       </div>
