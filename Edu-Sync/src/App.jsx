@@ -14,7 +14,8 @@ import Registration from "./AUTH/Registration";
 // professor component
 import ProfessorLayout from "./Professor/ProfessorLayout";
 import ProfessorHome from "./Professor/ProfessorHome";
-
+import NotificationsPage from "./Professor/NotificationPage";
+import MessagesPage from "./Professor/MessagesPage";
 function App() {
   return (
     <Router>
@@ -30,6 +31,8 @@ function App() {
           {/* Professor routes */}
           <Route path="/dashboard/professor" element={<ProfessorLayout />}>
             <Route index element={<ProfessorHome />} />
+            <Route path="messages" element={<MessagesPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
           </Route>
         </Routes>
       </div>
