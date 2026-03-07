@@ -55,6 +55,8 @@ function App() {
           {/* Professor routes */}
           <Route path="/dashboard/professor" element={<ProfessorLayout />}>
             <Route index element={<ProfessorHome />} />
+            {/* FIX: Added missing schedule route for Professor! */}
+            <Route path="schedule" element={<SharedTimetable />} />
             <Route path="messages" element={<MessagesPage />} />
             <Route path="notifications" element={<NotificationPage />} />
             <Route path="profile" element={<SharedProfile />} />
@@ -68,7 +70,6 @@ function App() {
             <Route path="schedule" element={<SharedTimetable />} />
             <Route path="discussions" element={<SharedForum />} />
             <Route path="resources" element={<SharedResources />} />
-            {/* Added Study Room for CR */}
             <Route path="study-room" element={<StudyRoom />} />
             <Route path="messages" element={<CRMessages />} />
             <Route path="notifications" element={<CRNotifications />} />

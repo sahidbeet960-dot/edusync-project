@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Users, Clock, MessageSquare, Plus, Send, X, Target, Loader2, Award, Zap, LogIn } from 'lucide-react';
 import apiClient from '../services/api'; 
 
-const WS_BASE_URL = 'wss://edusync-backend-production-204a.up.railway.app/api/v1/rooms/ws'; 
+const WS_BASE_URL = 'wss://edusync-project-production.up.railway.app/api/v1/rooms/ws'; 
 
 const formatTime = (totalSeconds) => {
   if (isNaN(totalSeconds) || totalSeconds < 0) return "00:00:00";
