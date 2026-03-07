@@ -1,10 +1,6 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-// authentication and log in
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
+// authentication
 import RoleSelection from "./LOGIN/RoleSelection";
 import Login from "./AUTH/Login";
 import Registration from "./AUTH/Registration";
@@ -44,19 +40,19 @@ function App() {
     <Router>
       <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
         <Routes>
-          {/* Default router */}
           <Route path="/" element={<Navigate to="/role-selection" />} />
-          
-          {/* Authentication Routes */}
           <Route path="/role-selection" element={<RoleSelection />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Registration />} />
           
-          {/* Professor routes */}
+          {/* PROFESSOR ROUTES */}
           <Route path="/dashboard/professor" element={<ProfessorLayout />}>
             <Route index element={<ProfessorHome />} />
-            {/* FIX: Added missing schedule route for Professor! */}
+            {/* ALIASES: Guarantees the sidebar link never hits a blank screen */}
             <Route path="schedule" element={<SharedTimetable />} />
+            <Route path="events" element={<SharedTimetable />} />
+            <Route path="calendar" element={<SharedTimetable />} />
+            
             <Route path="messages" element={<MessagesPage />} />
             <Route path="notifications" element={<NotificationPage />} />
             <Route path="profile" element={<SharedProfile />} />
@@ -64,13 +60,17 @@ function App() {
             <Route path="discussions" element={<SharedForum />} />
           </Route>
           
-          {/* CR routes */}
+          {/* CR ROUTES */}
           <Route path="/dashboard/cr" element={<CRLayout />}>
             <Route index element={<CRHome />} />
             <Route path="schedule" element={<SharedTimetable />} />
             <Route path="discussions" element={<SharedForum />} />
             <Route path="resources" element={<SharedResources />} />
+            
+            {/* ADDED CR STUDY ROOM */}
             <Route path="study-room" element={<StudyRoom />} />
+            <Route path="live-class" element={<StudyRoom />} />
+            
             <Route path="messages" element={<CRMessages />} />
             <Route path="notifications" element={<CRNotifications />} />
             <Route path="profile" element={<SharedProfile />} />
@@ -81,7 +81,7 @@ function App() {
             <Route path="analyzer" element={<AiChatBot />} />
           </Route>
           
-          {/* Student routes */}
+          {/* STUDENT ROUTES */}
           <Route path="/dashboard/student" element={<StudentLayout />}>
             <Route index element={<StudentHome />} />
             <Route path="doc-chat" element={<SharedDocumentChat />} />
@@ -95,6 +95,7 @@ function App() {
             <Route path="notifications" element={<StudentNotification />} />
             <Route path="profile" element={<SharedProfile />} />
             <Route path="live-class" element={<StudyRoom />} />
+            <Route path="study-room" element={<StudyRoom />} />
             <Route path="ai-assistance" element={<AiChatBot />} />
           </Route>
         </Routes>
