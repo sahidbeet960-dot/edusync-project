@@ -14,6 +14,7 @@ import 'features/materials/viewmodels/materials_viewmodel.dart';
 import 'features/calendar/viewmodels/calendar_viewmodel.dart';
 import 'features/forum/viewmodels/forum_viewmodel.dart';
 import 'features/study_room/viewmodels/study_room_viewmodel.dart';
+import 'features/ai_hub/viewmodels/ai_hub_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CalendarViewModel()),
         ChangeNotifierProvider(create: (_) => ForumViewModel()),
         ChangeNotifierProvider(create: (_) => StudyRoomViewModel()),
+        ChangeNotifierProvider(create: (_) => AiHubViewModel()),
       ],
       child: const EduSyncApp(),
     ),
