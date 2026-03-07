@@ -3,9 +3,9 @@ class ApiConstants {
 
   // Production backend
   static const String baseUrl =
-      'API_URL';
+      'https://edusync-project-production.up.railway.app';
   
-  static const String wsBaseUrl = 'WebSocket_URL';
+  static const String wsBaseUrl = 'wss://edusync-project-production.up.railway.app';
   static const String apiPrefix = '/api/v1';
 
 
@@ -17,10 +17,11 @@ class ApiConstants {
 
 
   static const String userProfile = '$apiPrefix/users/me/profile';
+  static const String updateUserProfile = '$apiPrefix/users/me';
 
   //----------Events-------------------
 
-  static const String events = 'apiPrefix/events';
+  static const String events = '$apiPrefix/events';
 
   //----------Material-----------------
 

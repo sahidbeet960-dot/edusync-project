@@ -8,6 +8,7 @@ class UserModel {
   final int? semester;
   final String? department;
   final String? avatarUrl;
+  final String? bio;
   final DateTime? createdAt;
 
   final int totalMaterialsUploaded;
@@ -23,6 +24,7 @@ class UserModel {
     this.semester,
     this.department,
     this.avatarUrl,
+    this.bio,
     this.createdAt,
     this.totalMaterialsUploaded = 0,
     this.totalQuestionsAsked = 0,
@@ -39,6 +41,7 @@ class UserModel {
       semester: json['semester'],
       department: json['department'],
       avatarUrl: json['avatar_url'],
+      bio: json['bio'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : null,
@@ -79,6 +82,7 @@ class UserModel {
     int? semester,
     String? department,
     String? avatarUrl,
+    String? bio,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -88,6 +92,7 @@ class UserModel {
       semester: semester ?? this.semester,
       department: department ?? this.department,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      bio: bio ?? this.bio,
       createdAt: createdAt,
       totalMaterialsUploaded: totalMaterialsUploaded,
       totalQuestionsAsked: totalQuestionsAsked,
