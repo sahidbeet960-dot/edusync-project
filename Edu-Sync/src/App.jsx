@@ -21,7 +21,10 @@ import ProfessorHome from "./Professor/ProfessorHome";
 import NotificationPage from "./Professor/NotificationPage";
 import MessagesPage from "./Professor/MessagesPage";
 // cr component 
-
+import CRHome from "./CR/CRHome";
+import CRLayout from "./CR/CRLayout";
+import CRMessages from "./CR/CRMessages";
+import CRNotifications from "./CR/CRNotifications";
 // student component
 import StudentHome from "./Student/StudentHome";
 import StudentLayout from "./Student/StudentLayout";
@@ -40,7 +43,6 @@ function App() {
           <Route path="/role-selection" element={<RoleSelection />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Registration />} />
-
           {/* Professor routes */}
           <Route path="/dashboard/professor" element={<ProfessorLayout />}>
             <Route index element={<ProfessorHome />} />
@@ -50,11 +52,16 @@ function App() {
             <Route path="resources" element={<SharedResources />} />
             <Route path="discussions" element={<SharedForum />} />
           </Route>
-          {/* CR Dashboard */}
-          {/* <Route path="/dashboard/cr" element={<CRLayout />}>
-
-          </Route> */}
-
+          {/* CR routes */}
+          <Route path="/dashboard/cr" element={<CRLayout />}>
+            <Route index element={<CRHome />} />
+            <Route path="schedule" element={<SharedTimetable />} />
+            <Route path="discussions" element={<SharedForum />} />
+            <Route path="resources" element={<SharedResources />} />
+            <Route path="messages" element={<CRMessages />} />
+            <Route path="notifications" element={<CRNotifications />} />
+            <Route path="profile" element={<SharedProfile />} />
+          </Route>
           <Route path="/dashboard/student" element={<StudentLayout />}>
             <Route index element={<StudentHome />} />
             <Route path="doc-chat" element={<SharedDocumentChat />} />

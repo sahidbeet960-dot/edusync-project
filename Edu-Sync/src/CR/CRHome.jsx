@@ -15,14 +15,14 @@ import {
   Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import DashboardNotices from "../components/DashboardNotices";
+import DashboardNotices from "../Component/DashboardNotices";
 import apiClient from "../Services/Api";
 import { jwtDecode } from "jwt-decode";
 
 const CRHome = () => {
   const navigate = useNavigate();
 
-  // --- Dynamic State ---
+
   const [userName, setUserName] = useState("CR");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -30,8 +30,7 @@ const CRHome = () => {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [unansweredDoubts, setUnansweredDoubts] = useState(0);
 
-  // --- Modal States ---
-  // Broadcast Modal State
+
   const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
   const [broadcastTitle, setBroadcastTitle] = useState(""); // NEW
   const [broadcastMessage, setBroadcastMessage] = useState("");
@@ -43,7 +42,7 @@ const CRHome = () => {
     title: "",
     type: "Test",
   });
-  // 1. INITIAL DATA FETCH
+
   useEffect(() => {
     const token = localStorage.getItem("edusync_token");
     if (token) {
@@ -61,7 +60,6 @@ const CRHome = () => {
   const fetchAllDashboardData = async () => {
     setIsLoading(true);
     try {
-      // 1. Fetch Weekly Schedule & filter for TODAY
       const days = [
         "Sunday",
         "Monday",
@@ -80,9 +78,9 @@ const CRHome = () => {
         setTodaysClasses([]);
       }
 
-      // 2. Fetch Events
+    
       const eventsRes = await apiClient.get("/api/v1/events/");
-      // Filter out past events
+
       const futureEvents = eventsRes.data.filter(
         (evt) => new Date(evt.event_date) >= new Date().setHours(0, 0, 0, 0),
       );
@@ -92,7 +90,6 @@ const CRHome = () => {
         ),
       );
 
-      // 3. Fetch Forum Doubts to count unanswered ones
       const forumRes = await apiClient.get("/api/v1/forum/questions");
       const doubtsWithoutAnswers = forumRes.data.filter(
         (q) => !q.answers || q.answers.length === 0,
@@ -104,19 +101,19 @@ const CRHome = () => {
       setIsLoading(false);
     }
   };
-  // 2. BROADCAST MESSAGE HANDLER
+
   const handleSendBroadcast = async (e) => {
     e.preventDefault();
     if (!broadcastMessage.trim() || !broadcastTitle.trim()) return;
 
     try {
-      // 1. Generate a text file on-the-fly containing the broadcast message
+   
       const fileBlob = new Blob([broadcastMessage], { type: "text/plain" });
       const generatedFile = new File([fileBlob], "cr_broadcast.txt", {
         type: "text/plain",
       });
 
-      // 2. Package it exactly like a Material Upload
+     
       const formData = new FormData();
       formData.append("title", `[CR Broadcast] ${broadcastTitle}`);
       formData.append("description", broadcastMessage);
@@ -124,7 +121,6 @@ const CRHome = () => {
       formData.append("tags", "Notice");
       formData.append("file", generatedFile);
 
-      // 3. Send it to the Material Hub
       const uploadResponse = await apiClient.post(
         "/api/v1/materials/",
         formData,
@@ -133,7 +129,7 @@ const CRHome = () => {
         },
       );
 
-      // 4. Try to auto-verify it so it shows up instantly
+  
       const materialId =
         uploadResponse.data?.material?.id || uploadResponse.data?.id;
       if (materialId) {
@@ -149,7 +145,7 @@ const CRHome = () => {
         }
       }
 
-      // 5. Cleanup
+ 
       setBroadcastTitle("");
       setBroadcastMessage("");
       setIsBroadcastModalOpen(false);
@@ -158,7 +154,7 @@ const CRHome = () => {
       alert(error.response?.data?.detail || "Failed to send broadcast.");
     }
   };
-  // 3. EVENT MODAL HANDLERS
+
   const handleAddEvent = async (e) => {
     e.preventDefault();
     if (!newEvent.date || !newEvent.title) return;
@@ -169,13 +165,12 @@ const CRHome = () => {
       await apiClient.post("/api/v1/events/", {
         title: newEvent.title,
         event_date: formattedDate,
-        // Passing the 'type' in the description so it doesn't crash the backend schema
         description: `Type: ${newEvent.type}`,
         location: "",
       });
 
       setNewEvent({ date: "", title: "", type: "Test" });
-      fetchAllDashboardData(); // Refresh list instantly
+      fetchAllDashboardData(); 
     } catch (error) {
       console.error("Event error:", error);
       alert("Failed to create event.");
@@ -187,7 +182,6 @@ const CRHome = () => {
   const handleDeleteEvent = async (id) => {
     if (window.confirm("Delete this event?")) {
       try {
-        // Assuming your backend supports DELETE /events/{id}
         await apiClient.delete(`/api/v1/events/${id}`);
         setUpcomingEvents(upcomingEvents.filter((ev) => ev.id !== id));
       } catch (error) {
@@ -214,7 +208,6 @@ const CRHome = () => {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-in-out relative">
-      {/* Welcome Section */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
