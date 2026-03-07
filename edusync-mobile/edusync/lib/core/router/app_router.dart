@@ -6,6 +6,10 @@ import '../../features/home/views/home_screen.dart';
 
 
 import '../../features/profile/views/profile_screen.dart';
+import '../../features/ai_hub/views/ai_hub_screen.dart';
+import '../../features/ai_hub/views/ai_chat_screen.dart';
+import '../../features/ai_hub/views/ai_infographs_screen.dart';
+import '../../features/ai_hub/views/ai_summary_screen.dart';
 
 class AppRouter {
   static GoRouter? _router;
@@ -44,6 +48,22 @@ class AppRouter {
         GoRoute(
           path: '/profile',
           builder: (context, state) => const ProfileScreen(),
+        ),
+        GoRoute(
+          path: '/ai',
+          builder: (context, state) => const AiHubScreen(),
+        ),
+        GoRoute(
+          path: '/ai/chat',
+          builder: (context, state) => const AiChatScreen(),
+        ),
+        GoRoute(
+          path: '/ai/infographs',
+          builder: (context, state) => const AiInfographsScreen(),
+        ),
+        GoRoute(
+          path: '/ai/summary',
+          builder: (context, state) => const AiSummaryScreen(),
         ),
       ],
     );

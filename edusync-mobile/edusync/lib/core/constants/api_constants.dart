@@ -8,6 +8,17 @@ class ApiConstants {
   static const String wsBaseUrl = 'wss://edusync-project-production.up.railway.app';
   static const String apiPrefix = '/api/v1';
 
+  // AI Hub Service
+  static const String aiBaseUrl = 'https://edusync-ai-service.onrender.com';
+  static const String aiChatUpload = '$aiBaseUrl/chatbot/upload';
+  static const String aiChat = '$aiBaseUrl/chatbot/chat';
+  static const String aiInfographsUpload = '$aiBaseUrl/infograph/infograph/upload';
+  static const String aiInfographsHeatmap = '$aiBaseUrl/infograph/infograph/heatmap';
+  static const String aiInfographsPieChart = '$aiBaseUrl/infograph/infograph/piechart';
+  
+  static const String aiSummaryUpload = '$aiBaseUrl/summary/summary/upload';
+  static const String aiSummaryGenerate = '$aiBaseUrl/summary/summary';
+
 
   //----------Auth----------------------
 
