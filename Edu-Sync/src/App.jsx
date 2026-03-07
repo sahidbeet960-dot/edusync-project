@@ -10,7 +10,7 @@ import SharedResources from "./Component/SharedResources";
 import SharedForum from "./Component/SharedForum";
 import SharedSehedule from "./Component/SharedSchedule"
 import AiQuizGenerator from "./Component/AiQuizGenerator"
-import StudyRoom from "./Component/AiQuizGenerator";
+import StudyRoom from "./Component/studyRoom";
 import SharedDocumentChat from "./Component/SharedDocumentChat";
 import SharedSmartSummarizer from "./Component/SharedSmartSummarizer";
 import SharedInfographicMaker from "./Component/SharedInfographicMaker";
@@ -19,6 +19,12 @@ import ProfessorLayout from "./Professor/ProfessorLayout";
 import ProfessorHome from "./Professor/ProfessorHome";
 import NotificationsPage from "./Professor/NotificationPage";
 import MessagesPage from "./Professor/MessagesPage";
+// cr component 
+
+// student component
+import StudentHome from "./Student/StudentHome";
+import StudentLayout from "./Student/StudentLayout";
+
 function App() {
   return (
     <Router>
@@ -44,6 +50,14 @@ function App() {
           {/* <Route path="/dashboard/cr" element={<CRLayout />}>
 
           </Route> */}
+
+          <Route path="/dashboard/student" element={<StudentLayout />}>
+            <Route index element={<StudentHome />} />
+            <Route path="doc-chat" element={<SharedDocumentChat />} />
+            <Route path="quiz" element={<AiQuizGenerator />} />
+            <Route path="summary" element={<SharedSmartSummarizer />} />
+            <Route path="infographic" element={<SharedInfographicMaker />} />
+          </Route>
         </Routes>
       </div>
     </Router>

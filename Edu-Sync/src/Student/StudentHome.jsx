@@ -12,7 +12,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import DashboardNotices from "../components/DashboardNotices";
+import DashboardNotices from "../Component/DashboardNotices";
 import apiClient from "../Services/Api";
 import { jwtDecode } from "jwt-decode";
 
