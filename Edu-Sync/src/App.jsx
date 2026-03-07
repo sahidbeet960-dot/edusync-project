@@ -10,7 +10,7 @@ import Login from "./AUTH/Login";
 import Registration from "./AUTH/Registration";
 
 // shared component for all three roles
-
+import SharedProfile from "./Component/SharedProfile";
 // professor component
 import ProfessorLayout from "./Professor/ProfessorLayout";
 import ProfessorHome from "./Professor/ProfessorHome";
@@ -33,6 +33,7 @@ function App() {
             <Route index element={<ProfessorHome />} />
             <Route path="messages" element={<MessagesPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="profile" element={<SharedProfile/>}/>
           </Route>
         </Routes>
       </div>
