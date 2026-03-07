@@ -8,22 +8,26 @@ import Registration from "./AUTH/Registration";
 import SharedProfile from "./Component/SharedProfile";
 import SharedResources from "./Component/SharedResources";
 import SharedForum from "./Component/SharedForum";
-import SharedSehedule from "./Component/SharedSchedule"
+import SharedTimetable from "./Component/SharedSchedule"
 import AiQuizGenerator from "./Component/AiQuizGenerator"
 import StudyRoom from "./Component/studyRoom";
 import SharedDocumentChat from "./Component/SharedDocumentChat";
 import SharedSmartSummarizer from "./Component/SharedSmartSummarizer";
 import SharedInfographicMaker from "./Component/SharedInfographicMaker";
+import AiChatBot from "./Component/AiChatBot";
 // professor component
 import ProfessorLayout from "./Professor/ProfessorLayout";
 import ProfessorHome from "./Professor/ProfessorHome";
-import NotificationsPage from "./Professor/NotificationPage";
+import NotificationPage from "./Professor/NotificationPage";
 import MessagesPage from "./Professor/MessagesPage";
 // cr component 
 
 // student component
 import StudentHome from "./Student/StudentHome";
 import StudentLayout from "./Student/StudentLayout";
+import StudentMessages from "./Student/StudentMessages";
+import StudentNotification from "./Student/StudentNotification";
+
 
 function App() {
   return (
@@ -41,7 +45,7 @@ function App() {
           <Route path="/dashboard/professor" element={<ProfessorLayout />}>
             <Route index element={<ProfessorHome />} />
             <Route path="messages" element={<MessagesPage />} />
-            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="notifications" element={<NotificationPage />} />
             <Route path="profile" element={<SharedProfile />} />
             <Route path="resources" element={<SharedResources />} />
             <Route path="discussions" element={<SharedForum />} />
@@ -57,6 +61,14 @@ function App() {
             <Route path="quiz" element={<AiQuizGenerator />} />
             <Route path="summary" element={<SharedSmartSummarizer />} />
             <Route path="infographic" element={<SharedInfographicMaker />} />
+            <Route path="schedule" element={<SharedTimetable />} />
+            <Route path="discussions" element={<SharedForum />} />
+            <Route path="resources" element={<SharedResources />} />
+            <Route path="messages" element={<StudentMessages />} />
+            <Route path="notifications" element={<StudentNotification />} />
+            <Route path="profile" element={<SharedProfile />} />
+            <Route path="live-class" element={<StudyRoom />} />
+            <Route path="ai-assistance" element={<AiChatBot />} />
           </Route>
         </Routes>
       </div>
