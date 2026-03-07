@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1 import auth, users, materials, forum, events
+from app.api.v1 import auth, users, materials, forum, events, rooms, study
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -24,6 +24,8 @@ app.include_router(users.router, prefix="/api/v1/users")
 app.include_router(materials.router, prefix="/api/v1/materials", tags=["Material Hub"])
 app.include_router(forum.router, prefix="/api/v1/forum", tags=["Doubt Forum"])
 app.include_router(events.router, prefix="/api/v1/events")
+app.include_router(rooms.router, prefix="/api/v1/rooms")
+app.include_router(study.router, prefix="/api/v1/study")
 
 @app.get("/")
 async def root():

@@ -13,8 +13,7 @@ from app.models.users import User  # type: ignore
 from app.models.materials import Material  
 from app.models.forum import Question, Answer, AnswerVote
 from app.models.events import Event
-
-# IMPORTANT: Whenever you create a new model, you MUST import it here later
+from app.models.study import StudySession
 # e.g., from app.models.user import User
 
 # this is the Alembic Config object
