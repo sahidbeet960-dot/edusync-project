@@ -141,3 +141,4 @@ const pendingApprovals = () => {
     </div>
   );
 };
+export default pendingApprovals;
