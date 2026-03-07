@@ -1,9 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import {BrowserRouter as Router,Routes,Route,Navigate,} from "react-router-dom";
 // authentication and log in
 import RoleSelection from "./LOGIN/RoleSelection";
 import Login from "./AUTH/Login";
@@ -13,6 +8,9 @@ import Registration from "./AUTH/Registration";
 import SharedProfile from "./Component/SharedProfile";
 import SharedResources from "./Component/SharedResources";
 import SharedForum from "./Component/SharedForum";
+import SharedSehedule from "./Component/SharedSchedule"
+import AiQuizGenerator from "./Component/AiQuizGenerator"
+import StudyRoom from "./Component/AiQuizGenerator";
 // professor component
 import ProfessorLayout from "./Professor/ProfessorLayout";
 import ProfessorHome from "./Professor/ProfessorHome";
