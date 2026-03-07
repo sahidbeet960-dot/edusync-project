@@ -18,3 +18,30 @@ class PYQPaper(Base):
 
     # Relationship back to the User table
     uploader = relationship("User")
+    
+
+
+class ExtractedExamData(Base):
+    __tablename__ = "extracted_exam_data"
+
+    id = Column(Integer, primary_key=True, index=True)
+    # Link directly to the PYQ paper table!
+    document_id = Column(Integer, ForeignKey("pyq_papers.id"), nullable=False)
+    topic = Column(String, nullable=False)
+    marks = Column(Integer, default=0)
+    frequency = Column(Integer, default=1)
+    extracted_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationship back to the paper
+    paper = relationship("PYQPaper")
+
+
+class TopicImportance(Base):
+    __tablename__ = "topic_importance"
+
+    topic_name = Column(String, primary_key=True, index=True)
+    subject = Column(String, index=True)
+    total_marks_contribution = Column(Integer, default=0)
+    appearance_count = Column(Integer, default=0)
+    priority_level = Column(String)  # 'High', 'Medium', or 'Low'
+    last_updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

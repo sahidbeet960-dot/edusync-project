@@ -14,7 +14,7 @@ from app.models.materials import Material
 from app.models.forum import Question, Answer, AnswerVote
 from app.models.events import Event
 from app.models.study import StudySession
-from app.models.pyq import PYQPaper
+from app.models.pyq import PYQPaper, ExtractedExamData, TopicImportance
 # e.g., from app.models.user import User
 
 # this is the Alembic Config object
