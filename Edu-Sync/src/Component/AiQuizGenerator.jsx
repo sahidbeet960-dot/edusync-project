@@ -14,8 +14,6 @@ import {
 import axios from "axios";
 const AIQuizGenerator = () => {
   const AI_BASE_URL = "https://edusync-ai-latest.onrender.com";
-  // --- View State ---
-  // 'setup' | 'loading' | 'active' | 'results'
   const [step, setStep] = useState("setup");
 
   // --- Form State ---
@@ -56,19 +54,27 @@ const AIQuizGenerator = () => {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  // API CALL: Generate Quiz
+  
   const handleGenerateQuiz = async (e) => {
     e.preventDefault();
     setError("");
-    if (!docTitle.trim()) {
-      return setError("Please provide a document title.");
+
+    if (!docTitle.trim() || !docUrl.trim()) {
+      return setError("Please provide both a document title and a valid URL.");
     }
+    let safeUrl = docUrl.trim();
+    if (!safeUrl.startsWith("http://") && !safeUrl.startsWith("https://")) {
+      safeUrl = "https://" + safeUrl;
+    }
+
     setStep("loading");
+
     try {
       const response = await axios.post(`${AI_BASE_URL}/generate-quiz`, {
-        url: docUrl,
+        urls: [safeUrl],
         num_questions: parseInt(numQuestions),
       });
+
       const rawQuizArray = Array.isArray(response.data)
         ? response.data
         : response.data?.quiz;
@@ -89,6 +95,7 @@ const AIQuizGenerator = () => {
             explanation: getVal("explanation") || "No explanation provided.",
           };
         });
+
         setQuizData(normalizedQuiz);
         setTimeLeft(normalizedQuiz.length * 60);
         setCurrentQuestionIndex(0);
@@ -98,11 +105,22 @@ const AIQuizGenerator = () => {
         throw new Error("Invalid response format from AI.");
       }
     } catch (err) {
-      console.error("AI Error:", err);
-      setError(
-        err.response?.data?.detail ||
-          "Failed to generate quiz. Check the console for details.",
-      );
+      console.error("FastAPI Error Details:", err.response?.data?.detail);
+
+      const errorDetail = err.response?.data?.detail;
+
+      if (Array.isArray(errorDetail)) {
+        setError(
+          `Validation Error: ${errorDetail[0].msg} (${errorDetail[0].loc.join(".")})`,
+        );
+      } else if (typeof errorDetail === "string") {
+        setError(errorDetail);
+      } else {
+        setError(
+          "Failed to generate quiz. Please check the URL and try again.",
+        );
+      }
+
       setStep("setup");
     }
   };
@@ -159,9 +177,6 @@ const AIQuizGenerator = () => {
     setStep("setup");
   };
 
-  // ==========================================
-  // RENDER SECTIONS
-  // ==========================================
   const SetupView = () => (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Quiz Generator Form */}
@@ -461,6 +476,6 @@ const AIQuizGenerator = () => {
       {step === "results" && ResultsView()}
     </div>
   );
-};
+};;;
 
 export default AIQuizGenerator;
