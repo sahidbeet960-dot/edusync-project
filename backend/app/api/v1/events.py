@@ -19,8 +19,8 @@ async def create_event(
 ):
     """Create a new event. Only CRs, Professors, and Admins can do this."""
     
-    # --- Role-Based Security (Only Student vcan't write for now)---
-    if current_user.role == RoleEnum.STUDENT: # type: ignore
+    # --- Role-Based Security (Only Student can't write for now)---
+    if current_user.role == RoleEnum.STUDENT: # type: ignore     #as student is the only who can't access that's why using other would have used specific roles
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, 
             detail="Only CRs, Professors, or Admins can create official events."

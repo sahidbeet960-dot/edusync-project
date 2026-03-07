@@ -20,7 +20,7 @@ async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
         
-    # 2. Hash password and insert into Postgres(we are postgres)
+    # 2. Hash password and insert into Postgres(we are using postgres)
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
         email=user_data.email,
