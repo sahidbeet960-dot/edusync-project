@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, ArrowLeft, Loader2 } from 'lucide-react';
-import apiClient from '../services/api';
+import apiClient from '../Services/Api';
 
 const Registration = () =>{
        const location=useLocation();
