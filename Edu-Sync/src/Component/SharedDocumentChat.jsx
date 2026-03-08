@@ -8,6 +8,10 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+// --- IMPORTS FOR MARKDOWN RENDERING ---
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
 const AI_BASE_URL = "https://edusync-ai-service.onrender.com";
 
 const SharedDocumentChat = () => {
@@ -54,7 +58,6 @@ const SharedDocumentChat = () => {
       const data = await response.json();
       console.log("Upload Success:", data);
 
-     
       if (data.session_id && data.namespace) {
         setSessionId(data.session_id);
         setNamespace(data.namespace);
@@ -62,7 +65,7 @@ const SharedDocumentChat = () => {
         setMessages([
           {
             role: "ai",
-            text: ` I have successfully read "${file.name}". What would you like to know about it?`,
+            text: `I have successfully read **"${file.name}"**. What would you like to know about it?`,
           },
         ]);
       } else {
@@ -122,7 +125,7 @@ const SharedDocumentChat = () => {
         {
           role: "ai",
           isError: true,
-          text: "Network error: Failed to get a response from the AI.",
+          text: "**Network error:** Failed to get a response from the AI.",
         },
       ]);
     } finally {
@@ -222,17 +225,25 @@ const SharedDocumentChat = () => {
                     </div>
                   )}
 
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-5 py-3.5 text-sm leading-relaxed ${
-                      msg.role === "user"
-                        ? "bg-indigo-600 text-white rounded-tr-sm shadow-md"
-                        : msg.isError
+                  {msg.role === "user" ? (
+                    // USER MESSAGE
+                    <div className="max-w-[80%] rounded-2xl px-5 py-3.5 text-sm leading-relaxed bg-indigo-600 text-white rounded-tr-sm shadow-md">
+                      {msg.text}
+                    </div>
+                  ) : (
+                    // AI MESSAGE - UPDATED FOR MARKDOWN
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-5 py-4 text-sm leading-relaxed ${
+                        msg.isError
                           ? "bg-rose-50 border border-rose-200 text-rose-800 rounded-tl-sm shadow-sm"
-                          : "bg-white border border-slate-200 text-slate-700 rounded-tl-sm shadow-sm whitespace-pre-wrap"
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
+                          : "bg-white border border-slate-200 text-slate-700 rounded-tl-sm shadow-sm prose prose-sm max-w-none prose-indigo prose-p:my-1 prose-pre:bg-slate-900 prose-pre:text-slate-50 prose-code:text-indigo-600 prose-code:bg-indigo-50 prose-code:px-1 prose-code:rounded"
+                      }`}
+                    >
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {msg.text}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                 </div>
               ))}
 

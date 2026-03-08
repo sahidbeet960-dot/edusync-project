@@ -15,6 +15,10 @@ import {
 } from "lucide-react";
 import axios from "axios";
 
+// --- NEW IMPORTS FOR MARKDOWN RENDERING ---
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
 const AIChatbot = () => {
   // --- AI RAG State ---
   const AI_BASE_URL = "https://edusync-ai-latest.onrender.com";
@@ -250,21 +254,23 @@ const AIChatbot = () => {
             <div
               className={`max-w-[85%] sm:max-w-[75%] ${msg.sender === "user" ? "flex flex-col items-end" : ""}`}
             >
-              {msg.sender === "user" && (
+              {msg.sender === "user" ? (
+                // USER MESSAGE
                 <div className="bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-5 py-3 shadow-md space-y-2 text-sm">
                   {msg.text}
                 </div>
-              )}
-
-              {msg.sender === "ai" && (
+              ) : (
+                // AI MESSAGE - UPDATED FOR MARKDOWN
                 <div
                   className={`border px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm text-sm leading-relaxed ${
                     msg.isError
                       ? "bg-rose-50 border-rose-200 text-rose-800"
-                      : "bg-white border-slate-200 text-slate-700"
+                      : "bg-white border-slate-200 text-slate-700 prose prose-sm max-w-none prose-indigo prose-pre:bg-slate-900 prose-pre:text-slate-50 prose-code:text-indigo-600 prose-code:bg-indigo-50 prose-code:px-1 prose-code:rounded"
                   }`}
                 >
-                  {msg.text}
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {msg.text}
+                  </ReactMarkdown>
                 </div>
               )}
             </div>
@@ -274,10 +280,10 @@ const AIChatbot = () => {
         {/* Typing Indicator */}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center mr-3 shrink-0">
+            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center mr-3 shrink-0 mt-1">
               <Bot className="w-4 h-4 text-indigo-400" />
             </div>
-            <div className="bg-white border border-slate-200 px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm flex items-center space-x-1">
+            <div className="bg-white border border-slate-200 px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm flex items-center space-x-1 h-12">
               <div className="w-2 h-2 bg-slate-300 rounded-full animate-bounce"></div>
               <div
                 className="w-2 h-2 bg-slate-300 rounded-full animate-bounce"

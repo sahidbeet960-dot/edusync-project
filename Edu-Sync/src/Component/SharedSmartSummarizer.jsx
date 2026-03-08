@@ -9,11 +9,13 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+// --- IMPORTS FOR MARKDOWN RENDERING ---
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const AI_BASE_URL = "https://edusync-ai-service.onrender.com";
 
 const SharedSmartSummarizer = () => {
-  
   const [inputType, setInputType] = useState("file"); // 'file' or 'url'
   const [docUrl, setDocUrl] = useState("");
   const [file, setFile] = useState(null);
@@ -231,10 +233,11 @@ const SharedSmartSummarizer = () => {
                 </button>
               </div>
 
-              <div className="bg-slate-50 rounded-2xl p-6 md:p-8 border border-slate-200 shadow-inner">
-                <p className="text-slate-700 leading-loose whitespace-pre-wrap font-medium">
+              {/* UPDATED: Markdown renderer with Typography prose classes */}
+              <div className="bg-slate-50 rounded-2xl p-6 md:p-8 border border-slate-200 shadow-inner prose prose-slate max-w-none prose-indigo prose-headings:text-indigo-900 prose-a:text-indigo-600 hover:prose-a:text-indigo-500">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {summary}
-                </p>
+                </ReactMarkdown>
               </div>
             </div>
           )}
