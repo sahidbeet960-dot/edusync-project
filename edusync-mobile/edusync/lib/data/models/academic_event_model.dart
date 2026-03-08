@@ -4,7 +4,7 @@ class AcademicEventModel {
   final String? description;
   final DateTime eventDate;
   final String? location;
-  final String? createdById;
+  final String? organizerId;
   final DateTime? createdAt;
 
   AcademicEventModel({
@@ -13,7 +13,7 @@ class AcademicEventModel {
     this.description,
     required this.eventDate,
     this.location,
-    this.createdById,
+    this.organizerId,
     this.createdAt,
   });
 
@@ -23,12 +23,12 @@ class AcademicEventModel {
       title: json['title'] ?? '',
       description: json['description'],
       eventDate: json['event_date'] != null
-          ? DateTime.parse(json['event_date'])
+          ? DateTime.parse(json['event_date']).toLocal()
           : DateTime.now(),
       location: json['location'],
-      createdById: json['created_by_id']?.toString(),
+      organizerId: json['organizer_id']?.toString(),
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
+          ? DateTime.parse(json['created_at']).toLocal()
           : null,
     );
   }
@@ -36,7 +36,7 @@ class AcademicEventModel {
   Map<String, dynamic> toJson() => {
         'title': title,
         'description': description,
-        'event_date': eventDate.toIso8601String(),
+        'event_date': eventDate.toUtc().toIso8601String(),
         'location': location,
       };
 

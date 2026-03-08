@@ -112,10 +112,6 @@ class AuthViewModel extends ChangeNotifier {
       // Auto-login after successful registration
       return await login(email, password);
     } catch (e) {
-      print('Registration error: $e');
-      if (e is ApiException) {
-        print('ApiException details: ${e.message}');
-      }
       _error = _friendlyError(e);
       _state = AuthState.unauthenticated;
       notifyListeners();

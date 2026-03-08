@@ -7,10 +7,14 @@ class CalendarRepository {
 
 
   Future<List<AcademicEventModel>> getEvents() async {
-    final response = await _api.get(ApiConstants.events);
-    final List data =
-        response.data is List ? response.data : response.data['items'] ?? [];
-    return data.map((json) => AcademicEventModel.fromJson(json)).toList();
+    try {
+      final response = await _api.get(ApiConstants.events);
+      final List data =
+          response.data is List ? response.data : response.data['items'] ?? [];
+      return data.map((json) => AcademicEventModel.fromJson(json)).toList();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<AcademicEventModel> createEvent({
@@ -23,9 +27,9 @@ class CalendarRepository {
       ApiConstants.events,
       data: {
         'title': title,
-        'description': description,
-        'event_date': eventDate.toIso8601String(),
-        'location': location,
+        if (description != null) 'description': description,
+        'event_date': eventDate.toUtc().toIso8601String(),
+        if (location != null) 'location': location,
       },
     );
     return AcademicEventModel.fromJson(response.data);

@@ -10,6 +10,7 @@ import '../../features/ai_hub/views/ai_hub_screen.dart';
 import '../../features/ai_hub/views/ai_chat_screen.dart';
 import '../../features/ai_hub/views/ai_infographs_screen.dart';
 import '../../features/ai_hub/views/ai_summary_screen.dart';
+import '../../features/ai_hub/views/ai_pyq_screen.dart';
 
 class AppRouter {
   static GoRouter? _router;
@@ -64,6 +65,10 @@ class AppRouter {
         GoRoute(
           path: '/ai/summary',
           builder: (context, state) => const AiSummaryScreen(),
+        ),
+        GoRoute(
+          path: '/ai/pyqs',
+          builder: (context, state) => const AiPyqScreen(),
         ),
       ],
     );

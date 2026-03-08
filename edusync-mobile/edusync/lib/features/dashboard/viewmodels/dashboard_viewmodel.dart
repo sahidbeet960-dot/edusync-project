@@ -35,7 +35,7 @@ class DashboardViewModel extends ChangeNotifier {
 
       _upcomingEvents = (results[0] as List<AcademicEventModel>)
           .where((e) => e.isUpcoming)
-          .take(5)
+          .take(3)
           .toList();
 
       _recentMaterials = (results[1] as List<MaterialModel>).take(10).toList();
