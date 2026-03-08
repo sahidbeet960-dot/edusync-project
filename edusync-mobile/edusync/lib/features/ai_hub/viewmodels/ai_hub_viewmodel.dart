@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import '../repositories/ai_repository.dart';
 import '../models/ai_message_model.dart';
 import '../models/infograph_models.dart';
+import '../models/pyq_models.dart';
 
 class AiHubViewModel extends ChangeNotifier {
   final AiRepository _repo;
@@ -203,6 +204,69 @@ class AiHubViewModel extends ChangeNotifier {
       _isGeneratingSummary = false;
       notifyListeners();
       return false;
+    }
+  }
+
+  // --- PYQ Analyzer State ---
+  bool _isLoadingPyqSubjects = false;
+  bool get isLoadingPyqSubjects => _isLoadingPyqSubjects;
+
+  List<String> _pyqSubjects = [];
+  List<String> get pyqSubjects => List.unmodifiable(_pyqSubjects);
+
+  bool _isFetchingPyqAnalytics = false;
+  bool get isFetchingPyqAnalytics => _isFetchingPyqAnalytics;
+
+  List<PyqTopicData>? _pyqAnalyticsData;
+  List<PyqTopicData>? get pyqAnalyticsData => _pyqAnalyticsData;
+
+  String? _selectedPyqSubject;
+  String? get selectedPyqSubject => _selectedPyqSubject;
+
+  void initPyqSession() {
+    _pyqSubjects = [];
+    _pyqAnalyticsData = null;
+    _selectedPyqSubject = null;
+    _error = null;
+    notifyListeners();
+    fetchPyqSubjects();
+  }
+
+  Future<void> fetchPyqSubjects() async {
+    _isLoadingPyqSubjects = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _pyqSubjects = await _repo.fetchSubjects();
+      
+      // Auto-select first subject if available
+      if (_pyqSubjects.isNotEmpty && _selectedPyqSubject == null) {
+        selectPyqSubject(_pyqSubjects.first);
+      }
+    } catch (e) {
+      _error = 'Failed to fetch PYQ subjects: ${e.toString()}';
+    } finally {
+      _isLoadingPyqSubjects = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> selectPyqSubject(String subject) async {
+    _selectedPyqSubject = subject;
+    _isFetchingPyqAnalytics = true;
+    _error = null;
+    _pyqAnalyticsData = null;
+    notifyListeners();
+
+    try {
+      final rawData = await _repo.fetchPyqAnalytics(subject);
+      _pyqAnalyticsData = rawData.map((json) => PyqTopicData.fromJson(json as Map<String, dynamic>)).toList();
+    } catch (e) {
+      _error = 'Failed to fetch analytics for $subject: ${e.toString()}';
+    } finally {
+      _isFetchingPyqAnalytics = false;
+      notifyListeners();
     }
   }
 }

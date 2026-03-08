@@ -82,6 +82,22 @@ class AiHubScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     _FeatureCard(
+                      title: 'PYQ Analyzer',
+                      description: 'AI-driven probability mapping of previous year topics.',
+                      lottiePath: 'assets/animations/Ask.json', // Using ask here for visual variety
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFE11D48), Color(0xFF9F1239)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      icon: Icons.track_changes_rounded,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        context.push('/ai/pyqs');
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    _FeatureCard(
                       title: 'Exam Infographs',
                       description: 'Analyze past papers to reveal frequently tested topics and weightage.',
                       lottiePath: 'assets/animations/loading.json',

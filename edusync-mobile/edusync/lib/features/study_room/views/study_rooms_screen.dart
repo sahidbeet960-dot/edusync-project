@@ -97,7 +97,7 @@ class _StudyRoomsScreenState extends State<StudyRoomsScreen> {
     HapticFeedback.mediumImpact();
 
     final user = authVM.user;
-    if (user == null || user.id == null) {
+    if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error: Please log in again to sync your profile.')),
       );
@@ -105,7 +105,7 @@ class _StudyRoomsScreenState extends State<StudyRoomsScreen> {
     }
 
     // Safely parse the user ID from String to int
-    final userId = int.tryParse(user.id.toString()) ?? 0;
+    final userId = int.parse(user.id);
 
     roomVM.joinRoom(
       roomId.replaceAll(' ', '-').toLowerCase(),
@@ -498,9 +498,6 @@ class _StudyRoomsScreenState extends State<StudyRoomsScreen> {
   }
 
   Widget _buildParticipantCard({required String name, required String activeTime, required bool isMe}) {
-    final words = name.split(' ').where((w) => w.isNotEmpty).toList();
-    final initials = words.isNotEmpty ? words.take(2).map((w) => w[0].toUpperCase()).join() : '?';
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.03),

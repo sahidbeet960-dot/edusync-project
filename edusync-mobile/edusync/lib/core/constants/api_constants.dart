@@ -18,6 +18,9 @@ class ApiConstants {
   
   static const String aiSummaryUpload = '$aiBaseUrl/summary/summary/upload';
   static const String aiSummaryGenerate = '$aiBaseUrl/summary/summary';
+  
+  static const String aiPyqSubjects = '$baseUrl$apiPrefix/pyqs/';
+  static String aiPyqAnalytics(String subject) => '$baseUrl$apiPrefix/pyqs/analytics/topics/${Uri.encodeComponent(subject)}';
 
 
   //----------Auth----------------------
@@ -32,7 +35,7 @@ class ApiConstants {
 
   //----------Events-------------------
 
-  static const String events = '$apiPrefix/events';
+  static const String events = '$apiPrefix/events/';
 
   //----------Material-----------------
 

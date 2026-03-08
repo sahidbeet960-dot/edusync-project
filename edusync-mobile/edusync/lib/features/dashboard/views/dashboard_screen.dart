@@ -119,7 +119,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final uri = Uri.parse(material.fileUrl);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-      } else if (mounted) {
+      } else if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not open file')),
         );
@@ -170,10 +170,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       }
     } catch (e) {
+      final uri = Uri.parse(material.fileUrl);
+      final canLaunch = await canLaunchUrl(uri);
+      
       if (context.mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        final uri = Uri.parse(material.fileUrl);
-        if (await canLaunchUrl(uri)) {
+        if (canLaunch) {
           await launchUrl(uri, mode: LaunchMode.externalApplication);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -186,17 +188,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _toggleVerify(BuildContext context, MaterialModel material) async {
     final matVM = context.read<MaterialsViewModel>();
+    final dashboardVM = context.read<DashboardViewModel>();
+    final scaffoldMsgr = ScaffoldMessenger.of(context);
+    
     bool success;
     if (material.isVerified) {
       success = await matVM.unverifyMaterial(material.id);
     } else {
       success = await matVM.verifyMaterial(material.id);
     }
-    if (mounted && success) {
+    if (success) {
       HapticFeedback.mediumImpact();
       // Reload dashboard to reflect changes
-      context.read<DashboardViewModel>().loadDashboard(forceRefresh: true);
-      ScaffoldMessenger.of(context).showSnackBar(
+      dashboardVM.loadDashboard(forceRefresh: true);
+      scaffoldMsgr.showSnackBar(
         SnackBar(
           content: Text(material.isVerified ? 'Material unverified' : 'Material verified ✓'),
           backgroundColor: AppColors.surfaceDark,
@@ -251,11 +256,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
 
-    if (confirm == true && mounted) {
+    if (confirm == true) {
       final matVM = context.read<MaterialsViewModel>();
+      final dashboardVM = context.read<DashboardViewModel>();
       final success = await matVM.deleteMaterial(material.id);
-      if (mounted && success) {
-        context.read<DashboardViewModel>().loadDashboard(forceRefresh: true);
+      if (success) {
+        dashboardVM.loadDashboard(forceRefresh: true);
       }
     }
   }

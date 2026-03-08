@@ -126,7 +126,7 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
       final uri = Uri.parse(material.fileUrl);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-      } else if (mounted) {
+      } else if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not open file')),
         );
@@ -184,11 +184,12 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
         );
       }
     } catch (e) {
+      final uri = Uri.parse(material.fileUrl);
+      final canLaunch = await canLaunchUrl(uri);
+      
       if (context.mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        // Fallback: open in external browser for download
-        final uri = Uri.parse(material.fileUrl);
-        if (await canLaunchUrl(uri)) {
+        if (canLaunch) {
           await launchUrl(uri, mode: LaunchMode.externalApplication);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -202,15 +203,17 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
   // ─── Verify / Unverify ───
   Future<void> _toggleVerify(BuildContext context, MaterialModel material) async {
     final matVM = context.read<MaterialsViewModel>();
+    final scaffoldMsgr = ScaffoldMessenger.of(context);
+    
     bool success;
     if (material.isVerified) {
       success = await matVM.unverifyMaterial(material.id);
     } else {
       success = await matVM.verifyMaterial(material.id);
     }
-    if (mounted && success) {
+    if (success) {
       HapticFeedback.mediumImpact();
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMsgr.showSnackBar(
         SnackBar(
           content: Text(material.isVerified ? 'Material unverified' : 'Material verified ✓'),
           backgroundColor: AppColors.surfaceDark,
@@ -218,8 +221,8 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
-    } else if (mounted && !success) {
-      ScaffoldMessenger.of(context).showSnackBar(
+    } else {
+      scaffoldMsgr.showSnackBar(
         SnackBar(
           content: Text(matVM.error ?? 'Operation failed'),
           backgroundColor: AppColors.error,
@@ -276,19 +279,19 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
       ),
     );
 
-    if (confirm == true && mounted) {
+    if (confirm == true) {
       final matVM = context.read<MaterialsViewModel>();
+      final scaffoldMsgr = ScaffoldMessenger.of(context);
       final success = await matVM.deleteMaterial(material.id);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success ? 'Material deleted' : (matVM.error ?? 'Delete failed')),
-            backgroundColor: success ? AppColors.surfaceDark : AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      }
+      
+      scaffoldMsgr.showSnackBar(
+        SnackBar(
+          content: Text(success ? 'Material deleted' : (matVM.error ?? 'Delete failed')),
+          backgroundColor: success ? AppColors.surfaceDark : AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
     }
   }
 

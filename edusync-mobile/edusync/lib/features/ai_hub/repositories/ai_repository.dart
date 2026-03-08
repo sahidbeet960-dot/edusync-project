@@ -1,6 +1,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_constants.dart';
 import '../models/infograph_models.dart';
 
@@ -209,6 +210,41 @@ class AiRepository {
            return data.toString();
        }
        rethrow;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // --- PYQ Analyzer Service ---
+
+  Future<List<String>> fetchSubjects() async {
+    try {
+      final response = await ApiClient().get(ApiConstants.aiPyqSubjects);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        // The API returns a list of PYQ objects, we need to extract unique subjects
+        final Set<String> subjects = {};
+        for (var item in data) {
+          if (item['subject'] != null) {
+            subjects.add(item['subject'].toString());
+          }
+        }
+        return subjects.toList();
+      }
+      throw Exception('Failed to fetch subjects');
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<dynamic>> fetchPyqAnalytics(String subject) async {
+    try {
+      final response = await ApiClient().get(ApiConstants.aiPyqAnalytics(subject));
+      if (response.statusCode == 200) {
+        // We will parse this into PyqTopicData directly from the raw list in the viewmodel or here
+        return response.data as List<dynamic>;
+      }
+      throw Exception('Failed to fetch pyq analytics for $subject');
     } catch (e) {
       rethrow;
     }
