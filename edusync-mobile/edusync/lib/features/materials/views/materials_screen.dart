@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:go_router/go_router.dart'; // <-- New import
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -498,7 +499,8 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
     );
   }
 
-  // ─── Enhanced Material Card ───
+  // ─── Ultra-Premium Material Card ───
+  // ─── Ultra-Premium Material Card ───
   Widget _buildEnhancedMaterialCard(MaterialModel material) {
     final ext = material.fileExtension.toUpperCase();
     final icon = _fileIcons[ext] ?? Icons.insert_drive_file_rounded;
@@ -511,169 +513,234 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
         HapticFeedback.lightImpact();
         _openMaterial(context, material);
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+      child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.08),
+              Colors.white.withValues(alpha: 0.03),
+            ],
+          ),
           border: Border.all(
             color: material.isVerified
-                ? AppColors.success.withValues(alpha: 0.3)
-                : Colors.white.withValues(alpha: 0.1),
+                ? AppColors.success.withValues(alpha: 0.4)
+                : Colors.white.withValues(alpha: 0.12),
+            width: 1.5,
           ),
           boxShadow: [
+            // Colored glowing shadow
+            BoxShadow(
+              color: color.withValues(alpha: 0.08),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+            // Deep ambient shadow
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            )
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
             child: Stack(
               children: [
-                // Top Color Bar
+                // Abstract ambient glow blob behind the icon
+                Positioned(
+                  top: -20,
+                  left: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color.withValues(alpha: 0.25),
+                    ),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                      child: const SizedBox(),
+                    ),
+                  ),
+                ),
+
+                // Top inner light reflection (simulates 3D glass edge)
                 Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
-                  height: 4,
+                  height: 1.5,
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [color, color.withValues(alpha: 0.6)],
+                        colors: [
+                          Colors.white.withValues(alpha: 0.5),
+                          Colors.white.withValues(alpha: 0.0),
+                        ],
                       ),
                     ),
                   ),
                 ),
 
-                // Verified shimmer overlay
-                if (material.isVerified)
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.success.withValues(alpha: 0.15),
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(12),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.verified_rounded, color: AppColors.success, size: 12),
-                          SizedBox(width: 3),
-                          Text(
-                            'Verified',
-                            style: TextStyle(
-                              color: AppColors.success,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
                 Padding(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Top: Icon and 3-dot menu
+                      // Header Row: Icon and Menu
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          // App Icon styling
                           Container(
-                            padding: const EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: color.withValues(alpha: 0.3),
+                                width: 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: color.withValues(alpha: 0.2),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                            child: Icon(icon, color: color, size: 22),
+                            child: Icon(icon, color: color, size: 26),
                           ),
-                          // 3-dot popup menu
-                          _buildPopupMenu(context, material, canVerify),
+                          
+                          // 3-Dot Menu
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              shape: BoxShape.circle,
+                            ),
+                            child: _buildPopupMenu(context, material, canVerify),
+                          ),
                         ],
                       ),
+                      
                       const Spacer(),
 
                       // Title
                       Text(
                         material.title,
                         style: AppTextStyles.titleMedium.copyWith(
-                          color: AppColors.textPrimaryDark,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          height: 1.3,
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          height: 1.2,
+                          letterSpacing: 0.2,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 6),
+                      
+                      const SizedBox(height: 12),
 
-                      // Tags
-                      if (material.tagList.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            gradient: AppColors.primaryGradient,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            material.tagList.first.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
+                      // Tags & Verification Row
+                      if (material.tagList.isNotEmpty || material.isVerified)
+                        Row(
+                          children: [
+                            if (material.isVerified) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.success.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.verified_rounded, color: AppColors.success, size: 10),
+                                    SizedBox(width: 3),
+                                    Text(
+                                      'VERIFIED', 
+                                      style: TextStyle(
+                                        color: AppColors.success, 
+                                        fontSize: 8, 
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.5,
+                                      )
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            if (material.tagList.isNotEmpty)
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    material.tagList.first.toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                      const SizedBox(height: 10),
+                      
+                      const SizedBox(height: 12),
 
-                      // Bottom Metadata row
-                      Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
+                      // Footer Data (Extension & Semester)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
                               ext,
                               style: TextStyle(
-                                color: color,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.3,
+                                color: color.withValues(alpha: 0.9),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
                               ),
                             ),
-                          ),
-                          const Spacer(),
-                          if (material.semester != null) ...[
-                            Icon(Icons.school_rounded, size: 12, color: AppColors.textSecondaryDark.withValues(alpha: 0.7)),
-                            const SizedBox(width: 3),
-                            Text(
-                              'S${material.semester}',
-                              style: TextStyle(
-                                color: AppColors.textSecondaryDark,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
+                            if (material.semester != null)
+                              Row(
+                                children: [
+                                  const Icon(Icons.school_rounded, size: 12, color: Colors.white60),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'SEM ${material.semester}',
+                                    style: const TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
                           ],
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -705,6 +772,9 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
             case 'download':
               _downloadFile(context, material);
               break;
+            case 'quiz': // <-- Added action to trigger Quiz generation
+              context.push('/quiz-setup', extra: [material]);
+              break;
             case 'verify':
               _toggleVerify(context, material);
               break;
@@ -716,6 +786,7 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
         itemBuilder: (_) => [
           _buildMenuItem(Icons.open_in_new_rounded, 'Open', 'open', AppColors.primaryLight),
           _buildMenuItem(Icons.download_rounded, 'Download', 'download', const Color(0xFF06B6D4)),
+          _buildMenuItem(Icons.quiz_rounded, 'Generate Quiz', 'quiz', AppColors.primary), // <-- Added button
           if (canVerify)
             _buildMenuItem(
               material.isVerified ? Icons.remove_circle_outline_rounded : Icons.verified_rounded,

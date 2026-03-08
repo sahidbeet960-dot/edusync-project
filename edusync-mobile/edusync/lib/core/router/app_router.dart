@@ -4,13 +4,16 @@ import '../../features/auth/viewmodels/auth_viewmodel.dart';
 import '../../features/auth/views/login_screen.dart';
 import '../../features/home/views/home_screen.dart';
 
-
 import '../../features/profile/views/profile_screen.dart';
 import '../../features/ai_hub/views/ai_hub_screen.dart';
 import '../../features/ai_hub/views/ai_chat_screen.dart';
 import '../../features/ai_hub/views/ai_infographs_screen.dart';
 import '../../features/ai_hub/views/ai_summary_screen.dart';
 import '../../features/ai_hub/views/ai_pyq_screen.dart';
+import '../../features/quiz/views/quiz_setup_screen.dart';
+import '../../features/quiz/views/quiz_screen.dart';
+import '../../features/quiz/views/quiz_analysis_screen.dart';
+import '../../data/models/material_model.dart';
 
 class AppRouter {
   static GoRouter? _router;
@@ -69,6 +72,22 @@ class AppRouter {
         GoRoute(
           path: '/ai/pyqs',
           builder: (context, state) => const AiPyqScreen(),
+        ),
+        // <-- NEW QUIZ ROUTES -->
+        GoRoute(
+          path: '/quiz-setup',
+          builder: (context, state) {
+            final materials = state.extra as List<MaterialModel>? ?? [];
+            return QuizSetupScreen(materials: materials);
+          },
+        ),
+        GoRoute(
+          path: '/quiz',
+          builder: (context, state) => const QuizScreen(),
+        ),
+        GoRoute(
+          path: '/quiz-analysis',
+          builder: (context, state) => const QuizAnalysisScreen(),
         ),
       ],
     );
