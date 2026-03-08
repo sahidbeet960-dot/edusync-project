@@ -25,6 +25,7 @@ University students are drowning in chaotic, decentralized communication. We rea
 
 **EduSync** guarantees a single source of truth for the classroom. By implementing a strict 3-tier hierarchy (Student, Class Representative, and Professor), we ensure that study materials, forum answers, and class schedules are always verified, organized, and instantly accessible. Add in a suite of AI document tools and a live study room, and you have the ultimate cross-platform campus experience.
 
+Video Link - https://youtu.be/XtB92ZvqCys
 ---
 
 ## ✨ Key Features
